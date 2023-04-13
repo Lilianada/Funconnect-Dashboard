@@ -28,7 +28,7 @@ const LoginEmail = () => {
       console.log(response.data);
       // Save email and request_id in localStorage
       localStorage.setItem('email', email);
-      localStorage.setItem('request_id', response.data.data.request_id);
+      localStorage.setItem('requestId', response.data.data.request_id);
       // Navigate to '/login' after successful OTP sent
       navigate('/login');
       setOtpSent(true); // Set otpSent state to true
@@ -64,9 +64,9 @@ const LoginEmail = () => {
             placeholder="Email Address"
             value={email}
             onChange={handleEmailChange} // Add email input change handler
-            />
-            {otpSent && <p className="success__message">OTP sent successfully</p>} {/* Display success message */}
-            {error && <p className="error__message">{error}</p>} {/* Display error message */}
+          />
+          {otpSent && <p className="success__message">OTP sent successfully</p>} {/* Display success message */}
+          {error && <p className="error__message">{error}</p>} {/* Display error message */}
           <button type="submit" className="form__button">
             {loading ? 'Loading...' : 'Send Otp'}
           </button>

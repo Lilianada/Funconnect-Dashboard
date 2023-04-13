@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useHistory } from 'react-router-dom'; // Import useHistory from react-router-dom
+import { useNavigate } from 'react-router-dom'; // Import useHistory from react-router-dom
 import Logo from '../../image/funConnectLogo.png';
 import axios from 'axios';
 import './style.css';
@@ -7,7 +7,7 @@ import './style.css';
 export default function LoginOtp() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const history = useHistory(); // Get the history object from react-router-dom
+  const navigate = useNavigate(); // Get the history object from react-router-dom
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -19,6 +19,7 @@ export default function LoginOtp() {
 
     if (!email || !requestId) {
       console.error('Email or requestId not found in local storage');
+      setError('Email or requestId not found in local storage. Please try again.');
       return;
     }
 
@@ -32,19 +33,16 @@ export default function LoginOtp() {
 
     try {
       const response = await axios.post(
-        'https://api.funconnect.app/auth/login/verify-otp',
+        'https://api.funconnect.app/auth/login/otp',
         { email, otp, request_id: requestId },
         { headers: { 'Accept': 'application/json' } }
       );
 
       console.log(response.data);
       // Check if OTP verification was successful
-      if (response.data.message === 'Otp verified.') {
-        // Perform login action here
+      if (response.data.message === 'OK') {
         console.log('Login successful');
-
-        // Navigate to the dashboard page
-        history.push('/dashboard');
+        navigate('/dashboard'); 
       } else {
         setError('Incorrect OTP. Please try again.');
       }

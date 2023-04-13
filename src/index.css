@@ -85,9 +85,12 @@ button :hover{
 
 .error__message{
   color: red;
-  font-size: var(--twelve);
-  text-align: center;
-  margin-top: .35rem;
+    font-size: var(--twelve);
+    text-align: center;
+    background: #ff000042;
+    margin-top: 0.5rem;
+    border-radius: 5px;
+    padding: 0.25rem 0.5rem;
 }
 .success__message{
   color: green;
