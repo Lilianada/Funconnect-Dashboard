@@ -75,8 +75,25 @@ button{
   cursor: pointer;
   font-family: var(--font);
   font-weight: 400;
+  font-size: var(--sixteen);
+  transition: all 0.3s ease-in-out;
 }
 
+button :hover{
+  transform: scale(.95, 1);
+} 
 
+.error__message{
+  color: red;
+  font-size: var(--twelve);
+  text-align: center;
+  margin-top: .35rem;
+}
+.success__message{
+  color: green;
+  font-size: var(--twelve);
+  text-align: center;
+  margin-top: .35rem;
+}
 
 /* Path: src/components/index.css */

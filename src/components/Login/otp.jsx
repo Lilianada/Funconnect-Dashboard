@@ -1,19 +1,75 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom'; // Import useHistory from react-router-dom
 import Logo from '../../image/funConnectLogo.png';
+import axios from 'axios';
 import './style.css';
 
 export default function LoginOtp() {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const history = useHistory(); // Get the history object from react-router-dom
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const otp = e.target[0].value;
+
+    // Retrieve email and requestId from local storage
+    const email = localStorage.getItem('email');
+    const requestId = localStorage.getItem('requestId');
+
+    if (!email || !requestId) {
+      console.error('Email or requestId not found in local storage');
+      return;
+    }
+
+    // Call sendOtp function with email, otp, and requestId
+    sendOtp(email, otp, requestId);
+  };
+
+  const sendOtp = async (email, otp, requestId) => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await axios.post(
+        'https://api.funconnect.app/auth/login/verify-otp',
+        { email, otp, request_id: requestId },
+        { headers: { 'Accept': 'application/json' } }
+      );
+
+      console.log(response.data);
+      // Check if OTP verification was successful
+      if (response.data.message === 'Otp verified.') {
+        // Perform login action here
+        console.log('Login successful');
+
+        // Navigate to the dashboard page
+        history.push('/dashboard');
+      } else {
+        setError('Incorrect OTP. Please try again.');
+      }
+    } catch (error) {
+      console.error(error);
+      setError('Failed to verify OTP. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="container">
-        <div className="login">
-                <div className="logo">
-                    <img src={Logo} alt="Logo" />
-                </div>
-                <form action="post" className="login__form">
-                    <input type="text" className="form__field" placeholder='Enter Otp' />
-                    <button type="submit" className='form__button'>Validate Otp</button>
-                </form>
+      <div className="login">
+        <div className="logo">
+          <img src={Logo} alt="Logo" />
         </div>
+        <form onSubmit={handleSubmit} className="login__form">
+          <input type="text" className="form__field" placeholder="Enter OTP" />
+          {error && <p className="error__message">{error}</p>}
+          <button type="submit" className="form__button">
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
+        </form>
+      </div>
     </div>
-  )
+  );
 }
