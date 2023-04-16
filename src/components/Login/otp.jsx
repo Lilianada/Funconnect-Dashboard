@@ -42,7 +42,7 @@ export default function LoginOtp() {
       // Check if OTP verification was successful
       if (response.data.message === 'OK') {
         console.log('Login successful');
-        navigate('/dashboard'); 
+        navigate('/categories'); 
       } else {
         setError('Incorrect OTP. Please try again.');
       }

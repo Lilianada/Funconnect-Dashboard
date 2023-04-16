@@ -1,0 +1,122 @@
+.categories {
+  margin: 1rem;
+}
+
+.categories .categories__header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.categories .categories__header h3 {
+  color: var(--primary);
+  font-size: var(--eighteen);
+  font-family: var(--font);
+  font-weight: 400;
+  margin: 0;
+}
+
+.categories .categories__header .header__btn {
+  color: var(--black);
+  font-size: var(--eighteen);
+  font-family: var(--font);
+  font-weight: 500;
+  cursor: pointer;
+  text-transform: capitalize;
+
+  background: none;
+}
+
+.categories .categories__header .header__btn:hover {
+  text-decoration: underline;
+}
+
+.categories .categories__body {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  place-items: center;
+  row-gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.categories .categories__body .category__item {
+  width: 220px;
+  height: 72px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  text-align: center;
+  background-color: var(--gray-light);
+  padding: 1rem;
+  border-radius: 7px;
+  cursor: pointer;
+}
+
+.category__image {
+  height: 50px;
+  width: 50px;
+  background-color: var(--box);
+  border-radius: 7px;
+  margin-right: 0.75rem;
+}
+
+.category__image img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+  border-radius: 7px;
+}
+
+.category__name {
+  color: var(--black);
+  font-size: var(--fourteen);
+  font-family: var(--font);
+  font-weight: 400;
+  margin: 0;
+}
+
+.category__name:hover {
+  text-decoration: underline;
+}
+
+@media screen and (min-width: 700px) {
+  .categories .categories__body {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media screen and (min-width: 768px) {
+  .categories {
+    margin: 2rem;
+  }
+}
+
+@media screen and (min-width: 850px) {
+  .categories .categories__header {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .categories .categories__body {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 1.5rem;
+    margin-top: 3rem;
+  }
+
+  .categories .categories__body .category__item {
+    width: 241px;
+  }
+
+  .category__name {
+    font-size: var(--sixteen);
+  }
+}
+
