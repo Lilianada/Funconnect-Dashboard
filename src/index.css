@@ -28,7 +28,6 @@
   --twenty-four: 24px;
 }
 
-
 body {
   font-family: var(--font);
   font-size: var(--sixteen);
@@ -42,7 +41,7 @@ a {
   text-decoration: none;
 }
 
-ul li{
+ul li {
   list-style: none;
 }
 
@@ -73,7 +72,7 @@ h2 {
   padding-right: 15px;
 }
 
-button{
+button {
   border: none;
   outline: none;
   cursor: pointer;
@@ -83,24 +82,27 @@ button{
   transition: all 0.3s ease-in-out;
 }
 
-button :hover{
-  transform: scale(.95, 1);
-} 
-
-.error__message{
-  color: red;
-    font-size: var(--twelve);
-    text-align: center;
-    background: #ff000042;
-    margin-top: 0.5rem;
-    border-radius: 5px;
-    padding: 0.25rem 0.5rem;
+button :hover {
+  transform: scale(0.95, 1);
 }
-.success__message{
-  color: green;
+
+.error__message {
+  color: red;
+  background: #ff000042;
+  margin-top: 0.5rem;
   font-size: var(--twelve);
   text-align: center;
-  margin-top: .35rem;
+  border-radius: 5px;
+  padding: 0.25rem 0.5rem;
+}
+.success__message {
+  color: green;
+  background-color: #0080003b;
+  margin-top: 0.5rem;
+  font-size: var(--twelve);
+  text-align: center;
+  border-radius: 5px;
+  padding: 0.25rem 0.5rem;
 }
 
 /* Path: src/components/index.css */

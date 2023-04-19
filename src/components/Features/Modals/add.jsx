@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState } from "react";
 import Dialog from "../../Dialog";
 import axios from "axios";
 import "./style.css";
@@ -7,9 +7,8 @@ export default function AddModal({ closeModal }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const statusRef = useRef(null);
 
-  const postCategories = async (event) => {
+  const postFeature = async (event) => {
     event.preventDefault();
     setLoading(true);
 
@@ -18,29 +17,20 @@ export default function AddModal({ closeModal }) {
 
     const formData = new FormData();
     formData.append("name", event.target.elements.name.value);
-    formData.append(
-      "status",
-      statusRef.current.checked ? "active" : "inactive"
-    );
-
-    const coverPhoto = event.target.elements.cover.files[0];
-    if (coverPhoto) {
-      formData.append("cover_photo", coverPhoto);
-    }
+    
 
     try {
-      const response = await axios.post(`${baseUrl}/places/categories`, formData, {
+      const response = await axios.post(`${baseUrl}/places/features`, formData, {
         headers: {
           Accept: "application/json",
           Authorization: "Bearer " + localStorage.getItem("apiToken"),
-          "Content-Type": "multipart/form-data",
           "x-api-key": apiKey,
         },
         maxBodyLength: Infinity,
       });
       setLoading(false);
       if (response.data.message === "Created") {
-        setSuccess("Category created successfully!");
+        setSuccess("Feature added successfully!");
         setTimeout(() => {setSuccess("")}, 4000);
         event.target.reset(); 
       } else {
@@ -58,15 +48,9 @@ export default function AddModal({ closeModal }) {
 
   return (
     <Dialog>
-      <div className="wrap__category">
-          <h3 className="form__head">Add New Category</h3>
-        <form onSubmit={postCategories} className="category__form">
-          <input
-            type="file"
-            className="form__field"
-            placeholder="Cover photo"
-            name="cover"
-          />
+      <div className="wrap__features">
+          <h3 className="form__head">Add New Feature</h3>
+        <form onSubmit={postFeature} className="features__form">
           <input
             type="text"
             className="form__field"
