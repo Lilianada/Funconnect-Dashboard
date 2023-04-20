@@ -1,28 +1,28 @@
 import React, { useState, useEffect } from "react";
 import Header from "../Header";
-import AddModal from "./Modal/add";
-import EditModal from "./Modal/edit";
+import AddModal from "./Modals/add";
+import EditModal from "./Modals/edit";
 import axios from "axios";
 import "./style.css";
 
-export default function Categories() {
+export default function Places() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [categories, setCategories] = useState([]);
-  const [categoryId, setCategoryId] = useState(null);
+  const [places, setPlaces] = useState([]);
+  const [placeId, setplaceId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
   useEffect(() => {
-    getCategories(); // Fetch categories on component mount
+    getPlaces(); // Fetch places on component mount
   }, []); // Empty dependency array to run effect only once
 
-  const getCategories = async (page) => {
+  const getPlaces = async (page) => {
     const apiToken = localStorage.getItem("apiToken");
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://api.funconnect.app/places/categories?page=${currentPage}`,
+        `https://api.funconnect.app/places?page=${currentPage}`,
         {
           headers: {
             Accept: "application/json",
@@ -34,8 +34,8 @@ export default function Categories() {
       const responseBody = response.data;
       console.log(responseBody);
       if (responseBody.message === "OK") {
-        const categories = responseBody.data.data;
-        setCategories(categories);
+        const places = responseBody.data.data;
+        setPlaces(places);
         setCurrentPage(responseBody.data.current_page);
         setTotalPages(responseBody.data.last_page);
       } else {
@@ -51,7 +51,7 @@ export default function Categories() {
   
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      getCategories(currentPage + 1);
+      getPlaces(currentPage + 1);
     }
   };
   
@@ -61,7 +61,7 @@ export default function Categories() {
         console.log(prevPage - 1);
         return prevPage - 1;
       });
-      getCategories(currentPage - 1);
+      getPlaces(currentPage - 1);
     }
   };
   
@@ -73,9 +73,9 @@ export default function Categories() {
 
   //opens edit modal
   const [editModal, setEditModal] = useState(false);
-  function handleEditModal(categoryId) {
+  function handleEditModal(placeId) {
     return () => {
-      setCategoryId(categoryId);
+      setplaceId(placeId);
       setEditModal(true);
     };
   }
@@ -83,46 +83,46 @@ export default function Categories() {
   //closes edit modal
   function closeModal() {
     setEditModal(false);
-    setCategoryId(null);
+    setplaceId(null);
   }
 
   return (
     <div className="">
       <Header />
-      <div className="categories">
-        <div className="categories__header">
-          <h3>A list of all the available categories</h3>
+      <div className="places">
+        <div className="places__header">
+          <h3>A list of all the available places</h3>
           <button className="header__btn" onClick={handleModal}>
-            Add New Category
+            Add New Place
           </button>
         </div>
         {loading ? (
           <div className="spinner"></div>
         ) : (
-          <div className="categories__body">
-            {categories.map((category) => {
+          <div className="places__body">
+            {places.map((place) => {
               return (
                 <div
-                  className="category__item"
-                  key={category.id}
-                  onClick={handleEditModal(category.id)}
+                  className="place__item"
+                  key={place.id}
+                  onClick={handleEditModal(place.id)}
                 >
                   <img
-                    className="category__image"
-                    src={category.cover_photo}
+                    className="place__image"
+                    src={place.cover_image_path}
                     alt="cover photos"
                   />
-                  <p className="category__name">{category.name}</p>
+                  <p className="place__name">{place.name}</p>
                 </div>
               );
             })}
           </div>
         )}
         {editModal && (
-          <EditModal closeModal={closeModal} categoryId={categoryId} />
+          <EditModal closeModal={closeModal} placeId={placeId} />
         )}
         {modal && <AddModal closeModal={handleModal} />}
-        <div className="categories__footer">
+        <div className="places__footer">
           <button
             className="footer__btn prev"
             onClick={handlePreviousPage}

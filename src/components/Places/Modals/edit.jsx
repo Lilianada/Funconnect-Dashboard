@@ -3,24 +3,32 @@ import Dialog from "../../Dialog";
 import axios from "axios";
 import "./style.css";
 
-export default function EditModal({ closeModal, categoryId }) {
+export default function EditModal({ closeModal, placeId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [categoryData, setCategoryData] = useState({
+  const [placeData, setPlaceData] = useState({
     name: "",
+    address: "",
+    headline: "",
+    description: "",
+    country: "",
+    state: "",
+    city: "",
+    closes_at: "",
+    opens_at: "",
+    phone_e164: "",
     cover_photo: null,
-    status: "",
   });
 
   const statusRef = useRef(null);
 
   useEffect(() => {
-    const getCategoryData = async () => {
+    const getPlaceData = async () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/places/categories/${categoryId}`,
+          `${process.env.REACT_APP_BASE_URL}/places/${placeId}`,
           {
             headers: {
               Accept: "application/json",
@@ -29,36 +37,44 @@ export default function EditModal({ closeModal, categoryId }) {
             },
           }
         );
-        setCategoryData((prevData) => ({
+        setPlaceData((prevData) => ({
           ...prevData,
           name: response.data.data.name,
+          headline: response.data.data.headline,
+          description: response.data.data.description,
+          address: response.data.data.address,
+          country: response.data.data.country,
+          state: response.data.data.state,
+          city: response.data.data.city,
+          closes_at: response.data.data.closes_at,
+          opens_at: response.data.data.opens_at,
+          phone_e164: response.data.data.phone_e164,
           cover_photo: response.data.data.cover_photo,
-          status: response.data.data.status,
         }));
       } catch (error) {
         console.error(error);
-        setError("Unable to fetch category data.");
+        setError("Unable to fetch Place data.");
       } finally {
         setLoading(false);
       }
     };
-    getCategoryData();
-  }, [categoryId]);
+    getPlaceData();
+  }, [placeId]);
 
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
     if (name === "cover_photo") {
-      setCategoryData((prevData) => ({
+      setPlaceData((prevData) => ({
         ...prevData,
         cover_photo: event.target.files[0],
       }));
     } else if (type === "checkbox" && name === "status") {
-      setCategoryData((prevData) => ({
+      setPlaceData((prevData) => ({
         ...prevData,
         status: checked ? "active" : "inactive",
       }));
     } else {
-      setCategoryData((prevData) => ({
+      setPlaceData((prevData) => ({
         ...prevData,
         [name]: value,
       }));
@@ -69,9 +85,9 @@ export default function EditModal({ closeModal, categoryId }) {
     event.preventDefault();
     setLoading(true);
     const formData = new FormData();
-    formData.append("name", categoryData.name);
-    formData.append("status", categoryData.status || "inactive");
-    formData.append("cover_photo", categoryData.cover_photo);
+    formData.append("name", placeData.name);
+    formData.append("status", placeData.status || "inactive");
+    formData.append("cover_photo", placeData.cover_photo);
     const headers = {
       Accept: "application/json",
       Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
@@ -80,12 +96,12 @@ export default function EditModal({ closeModal, categoryId }) {
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/places/categories/${categoryId}`,
+        `${process.env.REACT_APP_BASE_URL}/places/${placeId}`,
         formData,
         { headers, maxBodyLength: Infinity }
       );
       if (response.status === 200) {
-        setSuccess("Category updated successfully!");
+        setSuccess("Place updated successfully!");
         setTimeout(() => {
           setSuccess("");
           closeModal();
@@ -96,7 +112,7 @@ export default function EditModal({ closeModal, categoryId }) {
       }
     } catch (error) {
       console.error(error);
-      setError("Unable to update category data.");
+      setError("Unable to update Place data.");
       setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
@@ -105,14 +121,14 @@ export default function EditModal({ closeModal, categoryId }) {
 
   return (
     <Dialog>
-      <div className="wrap__category">
-        <div className="category__header">
-          <h3 className="form__head">Edit Category</h3>
+      <div className="wrap__Place">
+        <div className="Place__header">
+          <h3 className="form__head">Edit Place</h3>
           <input type="checkbox" name="status" id="status" ref={statusRef} />
           <label htmlFor="status"></label>
         </div>
 
-        <form onSubmit={handleSubmit} className="category__form">
+        <form onSubmit={handleSubmit} className="Place__form">
           <div className="form__field">
             <input
               type="file"
@@ -120,14 +136,18 @@ export default function EditModal({ closeModal, categoryId }) {
               placeholder="Cover photo"
               onChange={handleInputChange}
             />
-            <img src={categoryData.cover_photo} alt="" className="form__image" />
+            <img
+              src={placeData.cover_photo}
+              alt=""
+              className="form__image"
+            />
           </div>
           <input
             type="text"
             name="name"
             className="form__field"
             placeholder="Name"
-            value={categoryData.name}
+            value={placeData.name}
             onChange={handleInputChange}
           />
           {error && <p className="error__message">{error}</p>}

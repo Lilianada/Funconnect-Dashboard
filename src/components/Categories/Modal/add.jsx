@@ -7,6 +7,7 @@ export default function AddModal({ closeModal }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const statusRef = useRef(null);
 
   const postCategories = async (event) => {
@@ -18,11 +19,6 @@ export default function AddModal({ closeModal }) {
 
     const formData = new FormData();
     formData.append("name", event.target.elements.name.value);
-    formData.append(
-      "status",
-      statusRef.current.checked ? "active" : "inactive"
-    );
-
     const coverPhoto = event.target.elements.cover.files[0];
     if (coverPhoto) {
       formData.append("cover_photo", coverPhoto);
@@ -39,8 +35,9 @@ export default function AddModal({ closeModal }) {
         maxBodyLength: Infinity,
       });
       setLoading(false);
+      console.log(response.data);
       if (response.data.message === "Created") {
-        setSuccess("Category created successfully!");
+        setSuccess("Cover photo uploaded successfully!");
         setTimeout(() => {setSuccess("")}, 4000);
         event.target.reset(); 
       } else {
@@ -49,6 +46,7 @@ export default function AddModal({ closeModal }) {
         setTimeout(() => setError(""), 4000);
       }
     } catch (error) {
+      console.log(error);
       setError("Unable to post data. The name has already been taken.");
       setTimeout(() => setError(""), 4000);
     } finally {
@@ -59,7 +57,11 @@ export default function AddModal({ closeModal }) {
   return (
     <Dialog>
       <div className="wrap__category">
+      <div className="category__header">
           <h3 className="form__head">Add New Category</h3>
+          <input type="checkbox" name="status" id="status" ref={statusRef} />
+          <label htmlFor="status"></label>
+        </div>
         <form onSubmit={postCategories} className="category__form">
           <input
             type="file"
