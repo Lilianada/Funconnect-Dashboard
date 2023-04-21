@@ -20,7 +20,6 @@ export default function Header() {
       {/* Desktop Menu */}
       <div className="desktopHeader">
         <nav className="navbar">
-          <ul className="navList">
             <NavLink
               className={({ isActive }) =>
                 isActive ? "activeLink" : "navLink"
@@ -29,6 +28,7 @@ export default function Header() {
             >
               <img src={logo} className="logo" alt="FunConnect Logo" />
             </NavLink>
+          <ul className="navList">
             <li className="navItem">
               <NavLink
                 className={({ isActive }) =>

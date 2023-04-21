@@ -97,7 +97,9 @@ export default function Places() {
           </button>
         </div>
         {loading ? (
-          <div className="spinner"></div>
+          <div className="loader">
+            <div className="spinner"></div>
+          </div>
         ) : (
           <div className="places__body">
             {places.map((place) => {

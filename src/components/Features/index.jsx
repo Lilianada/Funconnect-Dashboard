@@ -79,7 +79,9 @@ export default function Features() {
           </button>
         </div>
         {loading ? ( // Conditional rendering for CSS spinner
-          <div className="spinner"></div>
+          <div className="loader">
+            <div className="spinner"></div>
+          </div>
         ) : (
           <div className="features__body">
             {features.map((feature) => {

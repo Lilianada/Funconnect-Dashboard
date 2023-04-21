@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import Dialog from "../../Dialog";
 import axios from "axios";
 import "./style.css";
 
-export default function EditModal({ closeModal, placeId }) {
+export default function AddModal({ closeModal, placeId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -15,45 +15,55 @@ export default function EditModal({ closeModal, placeId }) {
     country: "",
     state: "",
     city: "",
+    email: '',
+    categories: [],
     closes_at: "",
     opens_at: "",
     phone_e164: "",
     cover_photo: null,
   });
 
-  const statusRef = useRef(null);
-
+  // Get data
   useEffect(() => {
     const getPlaceData = async () => {
       setLoading(true);
+
+      const baseUrl = process.env.REACT_APP_BASE_URL;
+      const apiKey = process.env.REACT_APP_API_KEY;
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/places/${placeId}`,
-          {
-            headers: {
-              Accept: "application/json",
-              Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
-              "x-api-key": process.env.REACT_APP_API_KEY,
-            },
-          }
-        );
-        setPlaceData((prevData) => ({
-          ...prevData,
+        const response = await axios.get(`${baseUrl}/places/${placeId}`, {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + localStorage.getItem("apiToken"),
+            "Content-Type": "multipart/form-data",
+            "x-api-key": apiKey,
+          },
+          maxBodyLength: Infinity,
+        });
+        setLoading(false);
+        const categories = response.data.data.categories.map((category) => category.name);
+
+        setPlaceData({
           name: response.data.data.name,
+          address: response.data.data.address,
           headline: response.data.data.headline,
           description: response.data.data.description,
-          address: response.data.data.address,
           country: response.data.data.country,
           state: response.data.data.state,
           city: response.data.data.city,
+          email: response.data.data.email,
           closes_at: response.data.data.closes_at,
           opens_at: response.data.data.opens_at,
           phone_e164: response.data.data.phone_e164,
-          cover_photo: response.data.data.cover_photo,
-        }));
+          longitude: response.data.data.longitude,
+          latitude: response.data.data.latitude,
+          cover_photo: response.data.data.cover_image_path,
+          categories: categories,
+        });
       } catch (error) {
-        console.error(error);
-        setError("Unable to fetch Place data.");
+        console.log(error);
+        setError("Unable to fetch resource.");
+        setTimeout(() => setError(""), 4000);
       } finally {
         setLoading(false);
       }
@@ -61,41 +71,41 @@ export default function EditModal({ closeModal, placeId }) {
     getPlaceData();
   }, [placeId]);
 
+  // Handle input change
   const handleInputChange = (event) => {
-    const { name, value, type, checked } = event.target;
+    const { name, value } = event.target;
     if (name === "cover_photo") {
       setPlaceData((prevData) => ({
         ...prevData,
-        cover_photo: event.target.files[0],
-      }));
-    } else if (type === "checkbox" && name === "status") {
-      setPlaceData((prevData) => ({
-        ...prevData,
-        status: checked ? "active" : "inactive",
+        cover_photo: event.target.files[0] || null,
       }));
     } else {
       setPlaceData((prevData) => ({
         ...prevData,
-        [name]: value,
+        [name]: value || "",
       }));
     }
   };
 
+    //handle submit
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-    const formData = new FormData();
-    formData.append("name", placeData.name);
-    formData.append("status", placeData.status || "inactive");
-    formData.append("cover_photo", placeData.cover_photo);
+  
+    const formData = placeData.formData;
+    const coverPhoto = placeData.cover_photo.files && placeData.cover_photo.files[0];
+    if (coverPhoto) {
+      formData.append("cover_image_path", coverPhoto);
+    }
+  
     const headers = {
       Accept: "application/json",
       Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
       "x-api-key": process.env.REACT_APP_API_KEY,
     };
-
+  
     try {
-      const response = await axios.post(
+      const response = await axios.put(
         `${process.env.REACT_APP_BASE_URL}/places/${placeId}`,
         formData,
         { headers, maxBodyLength: Infinity }
@@ -118,40 +128,152 @@ export default function EditModal({ closeModal, placeId }) {
       setLoading(false);
     }
   };
+  
 
   return (
     <Dialog>
-      <div className="wrap__Place">
-        <div className="Place__header">
-          <h3 className="form__head">Edit Place</h3>
-          <input type="checkbox" name="status" id="status" ref={statusRef} />
-          <label htmlFor="status"></label>
-        </div>
-
-        <form onSubmit={handleSubmit} className="Place__form">
-          <div className="form__field">
-            <input
-              type="file"
-              name="cover_photo"
-              placeholder="Cover photo"
-              onChange={handleInputChange}
-            />
-            <img
-              src={placeData.cover_photo}
-              alt=""
-              className="form__image"
-            />
-          </div>
+      <div className="wrap__places">
+        <h3 className="form__head">Edit Place</h3>
+        {
+            loading && <div className="loader">
+                <div className="spinner"></div>
+            </div>
+        }
+        <form onSubmit={handleSubmit} className="places__form">
           <input
             type="text"
-            name="name"
             className="form__field"
             placeholder="Name"
+            name="name"
             value={placeData.name}
             onChange={handleInputChange}
           />
-          {error && <p className="error__message">{error}</p>}
+          <input
+            type="text"
+            className="form__field"
+            placeholder="Headline"
+            name="headline"
+            value={placeData.headline}
+            onChange={handleInputChange}
+          />
+          <textarea
+            name="description"
+            className="form__text"
+            cols="30"
+            rows="10"
+            placeholder="Description"
+            value={placeData.description}
+            onChange={handleInputChange}
+          ></textarea>
+          <div className="form__group">
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Opens at"
+              name="opens_at"
+              value={placeData.opens_at}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Closes at"
+              name="closes_at"
+              value={placeData.closes_at}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form__group">
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Phone No"
+              name="phone_e164"
+              value={placeData.phone_e164}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Email Address (optional)"
+              name="email"
+              value={placeData.email}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form__group">
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Category"
+              name="categories"
+              value={placeData.categories}
+              onChange={handleInputChange}
+            />
+            <div className="form__field">
+              <input
+                type="file"
+                name="cover_photo"
+                placeholder="Cover photo (Choose file)"
+                onChange={handleInputChange}
+              />
+              <img src={placeData.cover_photo} alt="" className="form__image" />
+            </div>
+          </div>
+          <textarea
+            name="address"
+            className="form__text"
+            cols="30"
+            rows="10"
+            placeholder="Address"
+          ></textarea>
+          <div className="form__group">
+            <input
+              type="text"
+              className="form__field"
+              placeholder="City"
+              name="city"
+              value={placeData.city}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              className="form__field"
+              placeholder="State"
+              name="state"
+              value={placeData.state}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Country"
+              name="country"
+              value={placeData.country}
+              onChange={handleInputChange}
+            />
+          </div>
+          <div className="form__group">
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Lat. (optional)"
+              name="lat"
+              value={placeData.latitude}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              className="form__field"
+              placeholder="Long. (optional)"
+              name="long"
+              value={placeData.longitude}
+              onChange={handleInputChange}
+            />
+          </div>
           {success && <p className="success__message">{success}</p>}
+          {error && <p className="error__message">{error}</p>}
+
           <div className="form__group">
             <button className="form__btn close" onClick={closeModal}>
               Close

@@ -56,16 +56,16 @@ export default function EditModal({ closeModal, featureId }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-
+  
     const baseUrl = process.env.REACT_APP_BASE_URL;
     const apiKey = process.env.REACT_APP_API_KEY;
-
+  
     const formData = new FormData();
     formData.append("name", featureData.name);
-
+  
     try {
       const response = await axios.put(
-        `${baseUrl}/places/features/:${featureId}`,
+        `${baseUrl}/places/features/${featureId}`,
         formData,
         {
           headers: {
@@ -103,7 +103,11 @@ export default function EditModal({ closeModal, featureId }) {
     <Dialog>
       <div className="wrap__features">
         <h3 className="form__head">Edit feature</h3>
-
+        {
+            loading && <div className="loader">
+                <div className="spinner"></div>
+            </div>
+        }
         <form onSubmit={handleSubmit} className="features__form">
           <input
             type="text"

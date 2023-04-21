@@ -96,9 +96,11 @@ export default function Categories() {
             Add New Category
           </button>
         </div>
-        {loading ? (
-          <div className="spinner"></div>
-        ) : (
+        {
+            loading && <div className="loader">
+                <div className="spinner"></div>
+            </div>
+        }
           <div className="categories__body">
             {categories.map((category) => {
               return (
@@ -117,7 +119,6 @@ export default function Categories() {
               );
             })}
           </div>
-        )}
         {editModal && (
           <EditModal closeModal={closeModal} categoryId={categoryId} />
         )}

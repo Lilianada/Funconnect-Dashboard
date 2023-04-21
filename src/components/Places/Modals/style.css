@@ -126,3 +126,4 @@
 .places__header input[type="checkbox"]:checked + label:before {
   transform: translateX(26px);
 }
+

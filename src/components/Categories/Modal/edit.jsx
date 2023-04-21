@@ -14,18 +14,19 @@ export default function EditModal({ closeModal, categoryId }) {
   });
 
   const statusRef = useRef(null);
-
   useEffect(() => {
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+    const apiKey = process.env.REACT_APP_API_KEY;
     const getCategoryData = async () => {
       setLoading(true);
       try {
         const response = await axios.get(
-          `${process.env.REACT_APP_BASE_URL}/places/categories/${categoryId}`,
+          `${baseUrl}/places/categories/${categoryId}`,
           {
             headers: {
               Accept: "application/json",
               Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
-              "x-api-key": process.env.REACT_APP_API_KEY,
+              "x-api-key": apiKey,
             },
           }
         );
@@ -38,6 +39,9 @@ export default function EditModal({ closeModal, categoryId }) {
       } catch (error) {
         console.error(error);
         setError("Unable to fetch category data.");
+        setTimeout(() => {
+          setError("");
+        }, 4000);
       } finally {
         setLoading(false);
       }
@@ -48,10 +52,14 @@ export default function EditModal({ closeModal, categoryId }) {
   const handleInputChange = (event) => {
     const { name, value, type, checked } = event.target;
     if (name === "cover_photo") {
-      setCategoryData((prevData) => ({
-        ...prevData,
-        cover_photo: event.target.files[0],
-      }));
+      const reader = new FileReader();
+      reader.onload = () => {
+        setCategoryData((prevData) => ({
+          ...prevData,
+          cover_photo: reader.result,
+        }));
+      };
+      reader.readAsDataURL(event.target.files[0]);
     } else if (type === "checkbox" && name === "status") {
       setCategoryData((prevData) => ({
         ...prevData,
@@ -66,21 +74,25 @@ export default function EditModal({ closeModal, categoryId }) {
   };
 
   const handleSubmit = async (event) => {
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+    const apiKey = process.env.REACT_APP_API_KEY;
     event.preventDefault();
     setLoading(true);
+
     const formData = new FormData();
     formData.append("name", categoryData.name);
     formData.append("status", categoryData.status || "inactive");
     formData.append("cover_photo", categoryData.cover_photo);
+
     const headers = {
       Accept: "application/json",
       Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
-      "x-api-key": process.env.REACT_APP_API_KEY,
+      "x-api-key": apiKey,
     };
 
     try {
       const response = await axios.post(
-        `${process.env.REACT_APP_BASE_URL}/places/categories/${categoryId}`,
+        `${baseUrl}/places/categories/${categoryId}`,
         formData,
         { headers, maxBodyLength: Infinity }
       );
@@ -111,7 +123,11 @@ export default function EditModal({ closeModal, categoryId }) {
           <input type="checkbox" name="status" id="status" ref={statusRef} />
           <label htmlFor="status"></label>
         </div>
-
+        {loading && (
+          <div className="loader">
+            <div className="spinner"></div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="category__form">
           <div className="form__field">
             <input
@@ -120,7 +136,13 @@ export default function EditModal({ closeModal, categoryId }) {
               placeholder="Cover photo"
               onChange={handleInputChange}
             />
-            <img src={categoryData.cover_photo} alt="" className="form__image" />
+            {categoryData.cover_photo && (
+              <img
+                src={categoryData.cover_photo}
+                alt=""
+                className="form__image"
+              />
+            )}
           </div>
           <input
             type="text"
