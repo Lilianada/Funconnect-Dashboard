@@ -43,9 +43,14 @@
   align-items: center;
   font-family: inherit;
   font-size: 16px;
-  color: var(--gray-dark);
+  color: var(--black);
   border: 1px solid var(--gray);
   border-radius: 8px;
+}
+
+.wrap__places .places__form .form__text::placeholder,
+.wrap__places .places__form .form__field::placeholder{
+  color: var(--gray-dark);
 }
 
 .form__image {
