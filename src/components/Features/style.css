@@ -46,9 +46,6 @@
     width: 75%;
     height: 72px;
     display: grid;
-    grid-template-columns: 50px 1fr;
-    gap: .5rem;
-    justify-content: flex-start;
     align-items: center;
     background-color: var(--gray-light);
     padding: 1rem;

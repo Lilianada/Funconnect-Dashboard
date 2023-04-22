@@ -11,14 +11,16 @@
   border-radius: 14px;
 }
 
-.wrap__category .form__head {
-  margin-bottom: 2rem;
-}
-
 .category__header {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   width: 100%;
+  margin-bottom: 2rem;
+}
+
+.wrap__category .form__head {
+  line-height: 1;
 }
 
 .wrap__category .category__form .form__field {

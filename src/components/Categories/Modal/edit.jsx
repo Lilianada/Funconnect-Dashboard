@@ -50,70 +50,84 @@ export default function EditModal({ closeModal, categoryId }) {
   }, [categoryId]);
 
   const handleInputChange = (event) => {
-    const { name, value, type, checked } = event.target;
-    if (name === "cover_photo") {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setCategoryData((prevData) => ({
-          ...prevData,
-          cover_photo: reader.result,
-        }));
-      };
-      reader.readAsDataURL(event.target.files[0]);
-    } else if (type === "checkbox" && name === "status") {
-      setCategoryData((prevData) => ({
-        ...prevData,
-        status: checked ? "active" : "inactive",
-      }));
-    } else {
-      setCategoryData((prevData) => ({
-        ...prevData,
-        [name]: value,
-      }));
-    }
-  };
+  const { name, value, type, checked } = event.target;
+  if (name === "cover_photo") {
+    const file = event.target.files[0];
+    setCategoryData((prevData) => ({
+      ...prevData,
+      cover_photo: file,
+      cover_photo_url: URL.createObjectURL(file), // create URL object
+    }));
+  } else if (type === "checkbox" && name === "status") {
+    setCategoryData((prevData) => ({
+      ...prevData,
+      status: checked ? "active" : "inactive",
+    }));
+  } else {
+    setCategoryData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  }
+};
 
-  const handleSubmit = async (event) => {
-    const baseUrl = process.env.REACT_APP_BASE_URL;
-    const apiKey = process.env.REACT_APP_API_KEY;
-    event.preventDefault();
-    setLoading(true);
+//handle submit
+const handleSubmit = async (event) => {
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+  const apiKey = process.env.REACT_APP_API_KEY;
+  event.preventDefault();
+  setLoading(true);
 
-    const formData = new FormData();
-    formData.append("name", categoryData.name);
-    formData.append("status", categoryData.status || "inactive");
-    formData.append("cover_photo", categoryData.cover_photo);
+  const formData = new FormData();
+  formData.append("name", categoryData.name);
+  formData.append("status", categoryData.status || "inactive");
+
+  try {
+    const response = await axios.get(categoryData.cover_photo, {
+      responseType: "blob"
+    });
+
+    const file = new File([response.data], "filename.jpg", {
+      type: "image/jpeg"
+    });
+
+    formData.append("cover_photo", file);
+    console.log(formData);
+    console.log(categoryData)
 
     const headers = {
       Accept: "application/json",
       Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
       "x-api-key": apiKey,
+      "Content-Type": "multipart/form-data",
     };
 
-    try {
-      const response = await axios.post(
-        `${baseUrl}/places/categories/${categoryId}`,
-        formData,
-        { headers, maxBodyLength: Infinity }
-      );
-      if (response.status === 200) {
-        setSuccess("Category updated successfully!");
-        setTimeout(() => {
-          setSuccess("");
-          closeModal();
-        }, 4000);
-      } else {
-        setError(response.data.error);
-        setTimeout(() => setError(""), 4000);
-      }
-    } catch (error) {
-      console.error(error);
-      setError("Unable to update category data.");
+    const postResponse = await axios.post(
+      `${baseUrl}/places/categories/${categoryId}`,
+      formData,
+      { headers, maxBodyLength: Infinity }
+    );
+
+    if (postResponse.status === 200) {
+      setSuccess("Category updated successfully!");
+      setTimeout(() => {
+        setSuccess("");
+        closeModal();
+      }, 4000);
+    } else {
+      setError(postResponse.data.error);
       setTimeout(() => setError(""), 4000);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.error(error);
+    setError("Unable to update category data.");
+    setTimeout(() => setError(""), 4000);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return (
     <Dialog>
@@ -139,7 +153,7 @@ export default function EditModal({ closeModal, categoryId }) {
             {categoryData.cover_photo && (
               <img
                 src={categoryData.cover_photo}
-                alt=""
+                alt="Cover"
                 className="form__image"
               />
             )}

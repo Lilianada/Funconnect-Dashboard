@@ -6,7 +6,7 @@
   padding: 2rem 1rem;
   margin: 0 auto;
   border-radius: 7px;
-  height: 280px;
+  height: 260px;
   width: 90%;
   border-radius: 14px;
 }
@@ -19,7 +19,6 @@
   display: flex;
   justify-content: space-between;
   width: 100%;
-  
 }
 
 .wrap__features .features__form .form__field {
@@ -28,40 +27,40 @@
   margin-bottom: 1rem;
 }
 
-.features__form .form__group {
+.wrap__features .features__form .form__group {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
   text-align: left;
   gap: 1rem;
-  margin-top: 1rem;
 }
 
-.form__group .form__btn {
+.wrap__features .features__form .form__group .form__btn {
   height: 46px;
   width: 100%;
   font-size: var(--sixteen);
   border-radius: 8px;
   padding: 12px;
+  margin-top: 1rem;
 }
 
-.save{
+.wrap__features .features__form .form__group .form__btn .save{
     background-color: var(--primary);
     color: var(--white);
 }
 
-.close{
+.wrap__features .features__form .form__group .form__btn .close{
     color: var(--gray-dark);
 }
 
 @media screen and (min-width: 768px) {
   .wrap__features {
     padding: 2rem;
-    width: 610px;
+    width: 60%;
   }
 
-  .form__group .form__btn{
-    width: 213px;
+  .wrap__features .features__form .form__group .form__btn{
+    width: 45%;
   }
 }

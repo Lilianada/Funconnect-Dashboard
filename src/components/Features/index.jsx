@@ -65,7 +65,6 @@ export default function Features() {
   function closeModal() {
     setEditModal(false);
     setFeatureId(null);
-    console.log(setFeatureId);
   }
 
   return (
@@ -75,7 +74,7 @@ export default function Features() {
         <div className="features__header">
           <h3>A list of all the available features</h3>
           <button className="header__btn" onClick={handleModal}>
-            Add New Category
+            Add New Feature
           </button>
         </div>
         {loading ? ( // Conditional rendering for CSS spinner

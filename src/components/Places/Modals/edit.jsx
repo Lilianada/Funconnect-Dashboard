@@ -3,7 +3,7 @@ import Dialog from "../../Dialog";
 import axios from "axios";
 import "./style.css";
 
-export default function AddModal({ closeModal, placeId }) {
+export default function EditModal({ closeModal, placeId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
@@ -15,7 +15,7 @@ export default function AddModal({ closeModal, placeId }) {
     country: "",
     state: "",
     city: "",
-    email: '',
+    email: "",
     categories: [],
     closes_at: "",
     opens_at: "",
@@ -41,7 +41,9 @@ export default function AddModal({ closeModal, placeId }) {
           maxBodyLength: Infinity,
         });
         setLoading(false);
-        const categories = response.data.data.categories.map((category) => category.name);
+        const categories = response.data.data.categories.map(
+          (category) => category.name
+        );
 
         setPlaceData({
           name: response.data.data.name,
@@ -87,34 +89,54 @@ export default function AddModal({ closeModal, placeId }) {
     }
   };
 
-    //handle submit
+  // Handle submit
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
-  
-    const formData = placeData.formData;
-    const coverPhoto = placeData.cover_photo.files && placeData.cover_photo.files[0];
-    if (coverPhoto) {
-      formData.append("cover_image_path", coverPhoto);
-    }
-  
-    const headers = {
-      Accept: "application/json",
-      Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
-      "x-api-key": process.env.REACT_APP_API_KEY,
-    };
-  
+
+    const formData = JSON.stringify({
+      name: placeData.name,
+      address: placeData.address,
+      headline: placeData.headline,
+      description: placeData.description,
+      country: placeData.country,
+      state: placeData.state,
+      city: placeData.city,
+      email: placeData.email,
+      closes_at: placeData.closes_at,
+      opens_at: placeData.opens_at,
+      phone_e164: placeData.phone_e164,
+      longitude: placeData.longitude,
+      latitude: placeData.latitude,
+      categories: placeData.categories,
+      coverPhoto: placeData.cover_photo,
+    });
+    console.log(formData);
+
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+    const apiKey = process.env.REACT_APP_API_KEY;
+
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_BASE_URL}/places/${placeId}`,
+      const response = await axios.post(
+        `${baseUrl}/places/${placeId}`,
         formData,
-        { headers, maxBodyLength: Infinity }
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
+            "x-api-key": apiKey,
+            "Content-Type": "application/json",
+          },
+          maxBodyLength: Infinity,
+        }
       );
-      if (response.status === 200) {
+      setLoading(false);
+      const resp = response.data.message
+      if (resp === "Updated") {
         setSuccess("Place updated successfully!");
         setTimeout(() => {
           setSuccess("");
-          closeModal();
+          window.location.reload();
         }, 4000);
       } else {
         setError(response.data.error);
@@ -128,17 +150,16 @@ export default function AddModal({ closeModal, placeId }) {
       setLoading(false);
     }
   };
-  
 
   return (
     <Dialog>
       <div className="wrap__places">
         <h3 className="form__head">Edit Place</h3>
-        {
-            loading && <div className="loader">
-                <div className="spinner"></div>
-            </div>
-        }
+        {loading && (
+          <div className="loader">
+            <div className="spinner"></div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="places__form">
           <input
             type="text"
@@ -226,6 +247,8 @@ export default function AddModal({ closeModal, placeId }) {
             cols="30"
             rows="10"
             placeholder="Address"
+            value={placeData.address}
+            onChange={handleInputChange}
           ></textarea>
           <div className="form__group">
             <input

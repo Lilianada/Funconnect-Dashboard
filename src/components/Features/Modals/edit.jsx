@@ -53,51 +53,54 @@ export default function EditModal({ closeModal, featureId }) {
     });
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
-  
-    const baseUrl = process.env.REACT_APP_BASE_URL;
-    const apiKey = process.env.REACT_APP_API_KEY;
-  
-    const formData = new FormData();
-    formData.append("name", featureData.name);
-  
-    try {
-      const response = await axios.put(
-        `${baseUrl}/places/features/${featureId}`,
-        formData,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: "Bearer " + localStorage.getItem("apiToken"),
-            "Content-Type": "multipart/form-data",
-            "x-api-key": apiKey,
-          },
-          maxBodyLength: Infinity,
-        }
-      );
-      setLoading(false);
-      if (response.data.message === "Updated") {
-        setSuccess("Feature data updated successfully!");
-        setTimeout(() => {
-          setSuccess("");
-        }, 4000);
-        event.target.reset();
-      } else {
-        const error = response.data.message;
-        setError(error);
-        setTimeout(() => setError(""), 4000);
+ //Handle submit
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setLoading(true);
+
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+  const apiKey = process.env.REACT_APP_API_KEY;
+
+  const formData = JSON.stringify({
+    name: featureData.name,
+  });
+
+  try {
+    const response = await axios.put(
+      `${baseUrl}/places/features/${featureId}`,
+      formData,
+      {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + localStorage.getItem("apiToken"),
+          "Content-Type": "application/json",
+          "x-api-key": apiKey,
+        },
+        maxBodyLength: Infinity,
       }
-      closeModal();
-    } catch (error) {
-      console.log(error);
-      setError("Unable to update feature data.");
+    );
+    setLoading(false);
+    if (response.data.message === "OK") {
+      setSuccess("Feature data updated successfully!");
+      setTimeout(() => {
+        setSuccess("");
+        window.location.reload(); 
+      }, 4000);
+      event.target.reset();
+    } else {
+      const error = response.data.message;
+      setError(error);
       setTimeout(() => setError(""), 4000);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    console.log(error);
+    setError("Unable to update feature data.");
+    setTimeout(() => setError(""), 4000);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <Dialog>
@@ -118,6 +121,7 @@ export default function EditModal({ closeModal, featureId }) {
             onChange={handleInputChange}
           />
           {error && <p className="error__message">{error}</p>}
+          {success && <p className="success__message">{success}</p>}
           <div className="form__group">
             <button className="form__btn close" onClick={closeModal}>
               Close

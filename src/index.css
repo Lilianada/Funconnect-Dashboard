@@ -52,7 +52,7 @@ h4,
 h5,
 h6 {
   font-weight: 500;
-  line-height: 1.2;
+  line-height: 28px;
 }
 
 h1 {
@@ -89,7 +89,7 @@ button :hover {
 .error__message {
   color: red;
   background: #ff000042;
-  margin-top: 0.5rem;
+  /* margin-top: 0.5rem; */
   font-size: var(--twelve);
   text-align: center;
   border-radius: 5px;
@@ -98,7 +98,7 @@ button :hover {
 .success__message {
   color: green;
   background-color: #0080003b;
-  margin-top: 0.5rem;
+  /* margin-top: 0.5rem; */
   font-size: var(--twelve);
   text-align: center;
   border-radius: 5px;
