@@ -32,7 +32,6 @@ export default function Places() {
       );
       setLoading(false);
       const responseBody = response.data;
-      console.log(responseBody);
       if (responseBody.message === "OK") {
         const places = responseBody.data.data;
         setPlaces(places);
@@ -42,7 +41,6 @@ export default function Places() {
         setError("Unable to fetch data.");
       }
     } catch (error) {
-      console.error(error);
       setError("Unable to fetch data. Please try again.");
     } finally {
       setLoading(false);
@@ -58,7 +56,6 @@ export default function Places() {
   const handlePreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(prevPage => {
-        console.log(prevPage - 1);
         return prevPage - 1;
       });
       getPlaces(currentPage - 1);

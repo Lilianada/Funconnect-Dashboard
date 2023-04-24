@@ -38,7 +38,6 @@ export default function Features() {
       }
       setLoading(false);
     } catch (error) {
-      console.error(error);
       setError("Unable to fetch data. Please try again.");
     } finally {
       setLoading(false);

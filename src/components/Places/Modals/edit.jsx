@@ -20,7 +20,7 @@ export default function EditModal({ closeModal, placeId }) {
     closes_at: "",
     opens_at: "",
     phone_e164: "",
-    cover_photo: null,
+    cover_image_path: null,
   });
 
   // Get data
@@ -59,11 +59,10 @@ export default function EditModal({ closeModal, placeId }) {
           phone_e164: response.data.data.phone_e164,
           longitude: response.data.data.longitude,
           latitude: response.data.data.latitude,
-          cover_photo: response.data.data.cover_image_path,
+          cover_image_path: response.data.data.cover_image_path,
           categories: categories,
         });
       } catch (error) {
-        console.log(error);
         setError("Unable to fetch resource.");
         setTimeout(() => setError(""), 4000);
       } finally {
@@ -74,82 +73,92 @@ export default function EditModal({ closeModal, placeId }) {
   }, [placeId]);
 
   // Handle input change
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
-    if (name === "cover_photo") {
-      setPlaceData((prevData) => ({
-        ...prevData,
-        cover_photo: event.target.files[0] || null,
-      }));
+const handleInputChange = (event) => {
+  const { name, value } = event.target;
+  if (name === "cover_image_path") {
+    setPlaceData((prevData) => ({
+      ...prevData,
+      cover_image_path: event.target.files[0] || null,
+    }));
+  } else if (name === "features") {
+    setPlaceData((prevData) => ({
+      ...prevData,
+      features: prevData.features.includes(value)
+        ? prevData.features.filter((feature) => feature !== value)
+        : [...prevData.features, value],
+    }));
+  } else {
+    setPlaceData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  }
+};
+
+// Define the category change handler
+const handleCategoryChange = (event) => {
+  const { value } = event.target;
+  setPlaceData((prevData) => ({
+    ...prevData,
+    categories: value.split(",").map((category) => category.trim()),
+  }));
+};
+
+
+// Define the submit handler
+const handleSubmit = async (event) => {
+  event.preventDefault();
+  setLoading(true);
+
+  const formData = new FormData();
+  Object.entries(placeData).forEach(([key, value]) => {
+    if (key === "categories") {
+      value.forEach((category) => {
+        formData.append("categories[]", category);
+      });
     } else {
-      setPlaceData((prevData) => ({
-        ...prevData,
-        [name]: value || "",
-      }));
+      formData.append(key, value);
     }
-  };
+  });
 
-  // Handle submit
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    setLoading(true);
+  const url = 'https://api.funconnect.app/places/97f837d5-5034-41c7-bea1-616eb877bbb8';
+  const apiKey = '5ad9198a-4d20-45bc-afc0-a05b15bd6720';
 
-    const formData = JSON.stringify({
-      name: placeData.name,
-      address: placeData.address,
-      headline: placeData.headline,
-      description: placeData.description,
-      country: placeData.country,
-      state: placeData.state,
-      city: placeData.city,
-      email: placeData.email,
-      closes_at: placeData.closes_at,
-      opens_at: placeData.opens_at,
-      phone_e164: placeData.phone_e164,
-      longitude: placeData.longitude,
-      latitude: placeData.latitude,
-      categories: placeData.categories,
-      coverPhoto: placeData.cover_photo,
+  try {
+    const response = await axios.post(url, formData, {
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
+        "x-api-key": apiKey,
+        
+      },
     });
-    console.log(formData);
 
-    const baseUrl = process.env.REACT_APP_BASE_URL;
-    const apiKey = process.env.REACT_APP_API_KEY;
-
-    try {
-      const response = await axios.post(
-        `${baseUrl}/places/${placeId}`,
-        formData,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
-            "x-api-key": apiKey,
-            "Content-Type": "application/json",
-          },
-          maxBodyLength: Infinity,
-        }
-      );
-      setLoading(false);
-      const resp = response.data.message
-      if (resp === "Updated") {
-        setSuccess("Place updated successfully!");
-        setTimeout(() => {
-          setSuccess("");
-          window.location.reload();
-        }, 4000);
-      } else {
-        setError(response.data.error);
-        setTimeout(() => setError(""), 4000);
-      }
-    } catch (error) {
-      console.error(error);
-      setError("Unable to update Place data.");
+    setLoading(false);
+    const resp = response.data.message;
+    if (resp === "Updated") {
+      setSuccess("Place updated successfully!");
+      setTimeout(() => {
+        setSuccess("");
+        window.location.reload();
+      }, 4000);
+    } else {
+      setError(response.data.error);
       setTimeout(() => setError(""), 4000);
-    } finally {
-      setLoading(false);
     }
-  };
+  } catch (error) {
+    if (error.response) {
+      setError(error.response.data.message);
+    } else if (error.request) {
+      setError("Unable to make request. Please try again later.");
+    } else {
+      setError("An error occurred. Please try again later.");
+    }
+    setTimeout(() => setError(""), 4000);
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <Dialog>
@@ -168,6 +177,7 @@ export default function EditModal({ closeModal, placeId }) {
             name="name"
             value={placeData.name}
             onChange={handleInputChange}
+            required
           />
           <input
             type="text"
@@ -176,6 +186,7 @@ export default function EditModal({ closeModal, placeId }) {
             name="headline"
             value={placeData.headline}
             onChange={handleInputChange}
+            required
           />
           <textarea
             name="description"
@@ -185,6 +196,7 @@ export default function EditModal({ closeModal, placeId }) {
             placeholder="Description"
             value={placeData.description}
             onChange={handleInputChange}
+            required
           ></textarea>
           <div className="form__group">
             <input
@@ -194,6 +206,7 @@ export default function EditModal({ closeModal, placeId }) {
               name="opens_at"
               value={placeData.opens_at}
               onChange={handleInputChange}
+              required
             />
             <input
               type="text"
@@ -229,16 +242,16 @@ export default function EditModal({ closeModal, placeId }) {
               placeholder="Category"
               name="categories"
               value={placeData.categories}
-              onChange={handleInputChange}
+              onChange={handleCategoryChange}
             />
             <div className="form__field">
               <input
                 type="file"
-                name="cover_photo"
+                name="cover_image_path"
                 placeholder="Cover photo (Choose file)"
                 onChange={handleInputChange}
               />
-              <img src={placeData.cover_photo} alt="" className="form__image" />
+              <img src={placeData.cover_image_path} alt="" className="form__image" />
             </div>
           </div>
           <textarea
@@ -281,7 +294,7 @@ export default function EditModal({ closeModal, placeId }) {
               type="text"
               className="form__field"
               placeholder="Lat. (optional)"
-              name="lat"
+              name="latitude"
               value={placeData.latitude}
               onChange={handleInputChange}
             />
@@ -289,7 +302,7 @@ export default function EditModal({ closeModal, placeId }) {
               type="text"
               className="form__field"
               placeholder="Long. (optional)"
-              name="long"
+              name="longitude"
               value={placeData.longitude}
               onChange={handleInputChange}
             />

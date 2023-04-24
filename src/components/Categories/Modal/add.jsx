@@ -35,9 +35,8 @@ export default function AddModal({ closeModal }) {
         maxBodyLength: Infinity,
       });
       setLoading(false);
-      console.log(response.data);
       if (response.data.message === "Created") {
-        setSuccess("Cover photo uploaded successfully!");
+        setSuccess("Category created successfully!");
         setTimeout(() => {setSuccess("")}, 4000);
         event.target.reset(); 
       } else {
@@ -46,7 +45,6 @@ export default function AddModal({ closeModal }) {
         setTimeout(() => setError(""), 4000);
       }
     } catch (error) {
-      console.log(error);
       setError("Unable to post data. The name has already been taken.");
       setTimeout(() => setError(""), 4000);
     } finally {

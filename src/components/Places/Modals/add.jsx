@@ -43,7 +43,6 @@ export default function AddModal({ closeModal }) {
         maxBodyLength: Infinity,
       });
       setLoading(false);
-      console.log(response.data);
       if (response.data.message === "Resource Created.") {
         setSuccess("Resource created successfully!");
         setTimeout(() => {
@@ -56,7 +55,6 @@ export default function AddModal({ closeModal }) {
         setTimeout(() => setError(""), 4000);
       }
     } catch (error) {
-      console.log(error);
       setError("Unable to post resource.");
       setTimeout(() => setError(""), 4000);
     } finally {

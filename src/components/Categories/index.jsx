@@ -32,7 +32,6 @@ export default function Categories() {
       );
       setLoading(false);
       const responseBody = response.data;
-      console.log(responseBody);
       if (responseBody.message === "OK") {
         const categories = responseBody.data.data;
         setCategories(categories);
@@ -42,7 +41,6 @@ export default function Categories() {
         setError("Unable to fetch data.");
       }
     } catch (error) {
-      console.error(error);
       setError("Unable to fetch data. Please try again.");
     } finally {
       setLoading(false);
@@ -58,7 +56,6 @@ export default function Categories() {
   const handlePreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(prevPage => {
-        console.log(prevPage - 1);
         return prevPage - 1;
       });
       getCategories(currentPage - 1);

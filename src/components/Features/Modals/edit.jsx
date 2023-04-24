@@ -29,12 +29,10 @@ export default function EditModal({ closeModal, featureId }) {
           }
         );
         setLoading(false);
-        console.log(response.data);
         setFeatureData({
           name: response.data.data.name,
         });
       } catch (error) {
-        console.log(error);
         setError("Unable to fetch feature data.");
         setTimeout(() => setError(""), 4000);
       } finally {
@@ -93,7 +91,6 @@ const handleSubmit = async (event) => {
       setTimeout(() => setError(""), 4000);
     }
   } catch (error) {
-    console.log(error);
     setError("Unable to update feature data.");
     setTimeout(() => setError(""), 4000);
   } finally {
