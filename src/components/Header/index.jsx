@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import { useAuth } from "../../services/auth";
 import logo from "../../image/Funconnect-logo.svg";
 import { GrClose } from "react-icons/gr";
 import { FiMenu } from "react-icons/fi";
@@ -15,6 +16,9 @@ export default function Header() {
   const closeMenu = () => {
     setShowMenu(false);
   };
+
+  const auth = useAuth();
+
   return (
     <header>
       {/* Desktop Menu */}
@@ -59,6 +63,16 @@ export default function Header() {
                 Places
               </NavLink>
             </li>
+            {!auth.user && (
+              <li className="navItem">
+                <NavLink
+                  className="navLink"
+                  to="/"
+                >
+                  Login
+                </NavLink>
+              </li>
+            )}
           </ul>
         </nav>
       </div>
@@ -120,6 +134,17 @@ export default function Header() {
                 Places
               </NavLink>
             </li>
+
+            {!auth.user && (
+              <li className="navItem">
+                <NavLink
+                  className="navLink"
+                  to="/"
+                >
+                  Login
+                </NavLink>
+              </li>
+            )}
           </ul>
         </nav>
       </div>

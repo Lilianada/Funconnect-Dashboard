@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Dialog from "../../Dialog";
 import axios from "axios";
 import "./style.css";
@@ -7,6 +7,7 @@ export default function AddModal({ closeModal }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [categories, setCategories] = useState([]);
 
   const postPlaces = async (event) => {
     event.preventDefault();
@@ -30,7 +31,6 @@ export default function AddModal({ closeModal }) {
     if (coverPhoto) {
       formData.append("cover_photo", coverPhoto);
     }
-
 
     try {
       const response = await axios.post(`${baseUrl}/places`, formData, {
@@ -61,6 +61,45 @@ export default function AddModal({ closeModal }) {
       setLoading(false);
     }
   };
+
+  //get categories
+  useEffect(() => {
+    const getCategories = async () => {
+      setLoading(true);
+      try {
+        const apiToken = localStorage.getItem('apiToken');
+        let url = 'https://api.funconnect.app/places/categories';
+        const response = await axios.get(url, {
+          headers: {
+            Accept: 'application/json',
+            Authorization: `Bearer ${apiToken}`,
+          },
+        });
+        const responseBody = response.data;
+        if (responseBody.message === 'OK') {
+          const firstPageCategories = responseBody.data.data;
+          setCategories(firstPageCategories.map(category => category.id));
+          if (responseBody.data.next_page_url !== null) {
+            const nextPageResponse = await axios.get(responseBody.data.next_page_url, {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${apiToken}`,
+              },
+            });
+            const nextPageCategories = nextPageResponse.data.data.map(category => category.id);
+            setCategories(prevCategories => [...prevCategories, ...nextPageCategories]);
+          }
+        } else {
+          throw new Error('Unable to fetch data.');
+        }
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getCategories();
+  }, []);
 
   return (
     <Dialog>
@@ -115,12 +154,14 @@ export default function AddModal({ closeModal }) {
             />
           </div>
           <div className="form__group">
-            <input
-              type="text"
-              className="form__field"
-              placeholder="Category"
-              name="categories"
-            />
+            <select className="form__field" placeholder="Categories">
+              {categories.map((categoryId) => (
+                <option key={categoryId} value={categoryId}>
+                  {categoryId}
+                </option>
+              ))}
+            </select>
+
             <input
               type="file"
               className="form__field"

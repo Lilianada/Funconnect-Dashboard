@@ -11,7 +11,8 @@ export default function Places() {
   const [places, setPlaces] = useState([]);
   const [placeId, setplaceId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [nextPage, setNextPage] = useState(null);
+  const [prevPage, setPrevPage] = useState(null);
 
   useEffect(() => {
     getPlaces(); // Fetch places on component mount
@@ -19,24 +20,29 @@ export default function Places() {
 
   const getPlaces = async (page) => {
     const apiToken = localStorage.getItem("apiToken");
+    let url = `https://api.funconnect.app/places?page=${currentPage}`;
     setLoading(true);
     try {
-      const response = await axios.get(
-        `https://api.funconnect.app/places?page=${currentPage}`,
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: "Bearer " + apiToken,
-          },
-        }
-      );
+      if (page) {
+        url = page;
+      }
+      console.log(url)
+      const response = await axios.get(url, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + apiToken,
+        },
+      });
       setLoading(false);
       const responseBody = response.data;
       if (responseBody.message === "OK") {
         const places = responseBody.data.data;
         setPlaces(places);
         setCurrentPage(responseBody.data.current_page);
-        setTotalPages(responseBody.data.last_page);
+        setNextPage(responseBody.data.next_page_url);
+        setPrevPage(responseBody.data.prev_page_url);
+        console.log(responseBody.data);
+        console.log(responseBody.data.data);
       } else {
         setError("Unable to fetch data.");
       }
@@ -46,22 +52,21 @@ export default function Places() {
       setLoading(false);
     }
   };
-  
+
   const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      getPlaces(currentPage + 1);
+    if (nextPage !== null) {
+      getPlaces(nextPage);
+      setCurrentPage(currentPage + 1);
     }
   };
-  
+
   const handlePreviousPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prevPage => {
-        return prevPage - 1;
-      });
-      getPlaces(currentPage - 1);
+    if (prevPage !== null) {
+      getPlaces(prevPage);
+      setCurrentPage(currentPage - 1);
     }
   };
-  
+
   //open and close add modal
   const [modal, setModal] = useState(false);
   const handleModal = () => {
@@ -117,26 +122,26 @@ export default function Places() {
             })}
           </div>
         )}
-        {editModal && (
-          <EditModal closeModal={closeModal} placeId={placeId} />
-        )}
+        {editModal && <EditModal closeModal={closeModal} placeId={placeId} />}
         {modal && <AddModal closeModal={handleModal} />}
-        <div className="places__footer">
-          <button
-            className="footer__btn prev"
-            onClick={handlePreviousPage}
-            disabled={currentPage === 1}
-          >
-            Previous
-          </button>
-          <button
-            className="footer__btn next"
-            onClick={handleNextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
+        {nextPage && (
+          <div className="categories__footer">
+            <button
+              className="footer__btn prev"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+            <button
+              className="footer__btn next"
+              onClick={handleNextPage}
+              // disabled={currentPage === totalPages}
+            >
+              Next
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

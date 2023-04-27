@@ -10,39 +10,63 @@ export default function Features() {
   const [error, setError] = useState("");
   const [features, setFeatures] = useState([]);
   const [featureId, setFeatureId] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [nextPage, setNextPage] = useState(null);
+  const [prevPage, setPrevPage] = useState(null);
 
   useEffect(() => {
-    getFeatures(); 
-  }, []); 
+    getFeatures();
+  }, []);
 
-  const getFeatures = async () => {
-    const apiToken = localStorage.getItem("apiToken");
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        "https://api.funconnect.app/places/features",
-        {
-          headers: {
-            Accept: "application/json",
-            Authorization: "Bearer " + apiToken,
-          },
-        }
-      );
-      setLoading(true);
-      const responseBody = response.data;
-      if (responseBody.message === "OK") {
-        const features = responseBody.data.data;
-        setFeatures(features);
-      } else {
-        setError("Unable to fetch data.");
-      }
-      setLoading(false);
-    } catch (error) {
-      setError("Unable to fetch data. Please try again.");
-    } finally {
-      setLoading(false);
+  const getFeatures = async (page) => {
+  const apiToken = localStorage.getItem("apiToken");
+  setLoading(true);
+  try {
+    let  url = `https://api.funconnect.app/places/features?page=${currentPage}`
+    if (page) {
+      url = page;
     }
-  };
+    const response = await axios.get(url, {
+      headers: {
+        Accept: "application/json",
+        Authorization: "Bearer " + apiToken,
+      },
+    });
+    setLoading(false);
+    const responseBody = response.data;
+    if (responseBody.message === "OK") {
+      const features = responseBody.data.data;
+      setNextPage(responseBody.data.next_page_url);
+      setPrevPage(responseBody.data.prev_page_url);
+      console.log(responseBody.data)
+      setFeatures(features);
+    } else {
+      setError("Unable to fetch data.");
+      setTimeout(() => setError(""), 4000);
+    }
+  } catch (error) {
+    setError("Unable to fetch data. Please try again.");
+    setTimeout(() => setError(""), 4000);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+const handleNextPage = () => {
+  if (nextPage !== null) {
+    getFeatures(nextPage);
+    setCurrentPage(currentPage + 1);
+  }
+};
+
+const handlePreviousPage = () => {
+  if (prevPage !== null) {
+    getFeatures(prevPage);
+    setCurrentPage(currentPage - 1);
+  }
+};
+
 
   //open and close add modal
   const [modal, setModal] = useState(false);
@@ -58,7 +82,6 @@ export default function Features() {
       setEditModal(true);
     };
   }
-  
 
   //closes edit modal
   function closeModal() {
@@ -99,6 +122,27 @@ export default function Features() {
           <EditModal closeModal={closeModal} featureId={featureId} />
         )}
         {modal && <AddModal closeModal={handleModal} />}
+        {
+          nextPage && (
+            <div className="categories__footer">
+              <button
+                className="footer__btn prev"
+                onClick={handlePreviousPage}
+                disabled={currentPage === 1}
+              >
+                Previous
+              </button>
+              <button
+                className="footer__btn next"
+                onClick={handleNextPage}
+                // disabled={currentPage === totalPages}
+              >
+                Next
+              </button>
+            </div>
+
+          )
+        }
       </div>
     </div>
   );

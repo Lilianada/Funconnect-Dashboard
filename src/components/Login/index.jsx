@@ -35,6 +35,7 @@ const LoginEmail = () => {
     } catch (error) {
       console.error(error);
       setError('Failed to send OTP. Please try again.'); // Set error state with error message
+      setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
     }

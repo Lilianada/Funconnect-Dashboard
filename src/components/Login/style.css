@@ -24,6 +24,7 @@
     border: 1px solid var(--gray);
     font-weight: 400;
     font-size: var(--sixteen);
+    margin-bottom: 1rem;
 }
 
 .form__field:focus{
