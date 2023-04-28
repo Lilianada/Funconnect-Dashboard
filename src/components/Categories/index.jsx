@@ -107,7 +107,7 @@ const handlePreviousPage = () => {
                 <div
                   className="category__item"
                   key={category.id}
-                  onClick={handleEditModal(category.id)}
+                  onClick={handleEditModal(category.name)}
                 >
                   <img
                     className="category__image"

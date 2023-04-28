@@ -67,30 +67,43 @@ export default function AddModal({ closeModal }) {
     const getCategories = async () => {
       setLoading(true);
       try {
-        const apiToken = localStorage.getItem('apiToken');
-        let url = 'https://api.funconnect.app/places/categories';
+        const apiToken = localStorage.getItem("apiToken");
+        let url = "https://api.funconnect.app/places/categories";
         const response = await axios.get(url, {
           headers: {
-            Accept: 'application/json',
+            Accept: "application/json",
             Authorization: `Bearer ${apiToken}`,
           },
         });
         const responseBody = response.data;
-        if (responseBody.message === 'OK') {
+        if (responseBody.message === "OK") {
           const firstPageCategories = responseBody.data.data;
-          setCategories(firstPageCategories.map(category => category.id));
+          setCategories(
+            firstPageCategories.map((category) => ({
+              id: category.id,
+              name: category.name,
+            }))
+          );
           if (responseBody.data.next_page_url !== null) {
-            const nextPageResponse = await axios.get(responseBody.data.next_page_url, {
-              headers: {
-                Accept: 'application/json',
-                Authorization: `Bearer ${apiToken}`,
-              },
-            });
-            const nextPageCategories = nextPageResponse.data.data.map(category => category.id);
-            setCategories(prevCategories => [...prevCategories, ...nextPageCategories]);
+            const nextPageResponse = await axios.get(
+              responseBody.data.next_page_url,
+              {
+                headers: {
+                  Accept: "application/json",
+                  Authorization: `Bearer ${apiToken}`,
+                },
+              }
+            );
+            const nextPageCategories = nextPageResponse.data.data.map(
+              (category) => ({ id: category.id, name: category.name })
+            );
+            setCategories((prevCategories) => [
+              ...prevCategories,
+              ...nextPageCategories,
+            ]);
           }
         } else {
-          throw new Error('Unable to fetch data.');
+          throw new Error("Unable to fetch data.");
         }
       } catch (error) {
         console.error(error);
@@ -155,9 +168,9 @@ export default function AddModal({ closeModal }) {
           </div>
           <div className="form__group">
             <select className="form__field" placeholder="Categories">
-              {categories.map((categoryId) => (
-                <option key={categoryId} value={categoryId}>
-                  {categoryId}
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
                 </option>
               ))}
             </select>
