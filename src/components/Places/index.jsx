@@ -26,7 +26,7 @@ export default function Places() {
       if (page) {
         url = page;
       }
-      console.log(url)
+      console.log(url);
       const response = await axios.get(url, {
         headers: {
           Accept: "application/json",
@@ -42,7 +42,6 @@ export default function Places() {
         setNextPage(responseBody.data.next_page_url);
         setPrevPage(responseBody.data.prev_page_url);
         console.log(responseBody.data);
-        console.log(responseBody.data.data);
       } else {
         setError("Unable to fetch data.");
       }
@@ -124,8 +123,8 @@ export default function Places() {
         )}
         {editModal && <EditModal closeModal={closeModal} placeId={placeId} />}
         {modal && <AddModal closeModal={handleModal} />}
-        {nextPage && (
-          <div className="categories__footer">
+        <div className="places__footer">
+          {prevPage && (
             <button
               className="footer__btn prev"
               onClick={handlePreviousPage}
@@ -133,15 +132,16 @@ export default function Places() {
             >
               Previous
             </button>
+          )}
+          {nextPage && (
             <button
               className="footer__btn next"
               onClick={handleNextPage}
-              // disabled={currentPage === totalPages}
             >
               Next
             </button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

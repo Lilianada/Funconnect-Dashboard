@@ -19,9 +19,7 @@ function App() {
             exact
             path="/login"
             element={
-              <RequireAuth>
                 <LoginOtp />
-              </RequireAuth>
             }
           />
           <Route

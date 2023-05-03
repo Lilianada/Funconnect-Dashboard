@@ -41,6 +41,7 @@ export default function EditModal({ closeModal, categoryId }) {
         setTimeout(() => {
           setError("");
         }, 4000);
+        console.log(error);
       } finally {
         setLoading(false);
       }

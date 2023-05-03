@@ -51,63 +51,61 @@ export default function EditModal({ closeModal, featureId }) {
     });
   };
 
- //Handle submit
-const handleSubmit = async (event) => {
-  event.preventDefault();
-  setLoading(true);
+  //Handle submit
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
 
-  const baseUrl = process.env.REACT_APP_BASE_URL;
-  const apiKey = process.env.REACT_APP_API_KEY;
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+    const apiKey = process.env.REACT_APP_API_KEY;
 
-  const formData = JSON.stringify({
-    name: featureData.name,
-  });
+    const formData = JSON.stringify({
+      name: featureData.name,
+    });
 
-  try {
-    const response = await axios.put(
-      `${baseUrl}/places/features/${featureId}`,
-      formData,
-      {
-        headers: {
-          Accept: "application/json",
-          Authorization: "Bearer " + localStorage.getItem("apiToken"),
-          "Content-Type": "application/json",
-          "x-api-key": apiKey,
-        },
-        maxBodyLength: Infinity,
+    try {
+      const response = await axios.put(
+        `${baseUrl}/places/features/${featureId}`,
+        formData,
+        {
+          headers: {
+            Accept: "application/json",
+            Authorization: "Bearer " + localStorage.getItem("apiToken"),
+            "Content-Type": "application/json",
+            "x-api-key": apiKey,
+          },
+          maxBodyLength: Infinity,
+        }
+      );
+      setLoading(false);
+      if (response.data.message === "OK") {
+        setSuccess("Feature data updated successfully!");
+        setTimeout(() => {
+          setSuccess("");
+        }, 4000);
+        event.target.reset();
+      } else {
+        const error = response.data.message;
+        setError(error);
+        setTimeout(() => setError(""), 4000);
       }
-    );
-    setLoading(false);
-    if (response.data.message === "OK") {
-      setSuccess("Feature data updated successfully!");
-      setTimeout(() => {
-        setSuccess("");
-        window.location.reload(); 
-      }, 4000);
-      event.target.reset();
-    } else {
-      const error = response.data.message;
-      setError(error);
+    } catch (error) {
+      setError("Unable to update feature data.");
       setTimeout(() => setError(""), 4000);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    setError("Unable to update feature data.");
-    setTimeout(() => setError(""), 4000);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   return (
     <Dialog>
       <div className="wrap__features">
         <h3 className="form__head">Edit feature</h3>
-        {
-            loading && <div className="loader">
-                <div className="spinner"></div>
-            </div>
-        }
+        {loading && (
+          <div className="loader">
+            <div className="spinner"></div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="features__form">
           <input
             type="text"

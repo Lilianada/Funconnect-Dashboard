@@ -14,32 +14,37 @@ const LoginEmail = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!validateEmail(email)) {
-      setError('Please enter a valid email address.'); // Set error state with email validation error message
+      setError('Please enter a valid email address.');
       return;
     }
     setLoading(true);
-    setError(null); // Reset error state
+    setError(null);
+  
     try {
+      let requestId = localStorage.getItem("requestId");
+      if (requestId) {
+        localStorage.removeItem("requestId");
+      }
+  
       const response = await axios.post(
-        'https://api.funconnect.app/auth/login/send-otp',
+        "https://api.funconnect.app/auth/login/send-otp",
         { email },
-        { headers: { Accept: 'application/json' } }
+        { headers: { Accept: "application/json" } }
       );
-      console.log(response.data);
-      // Save email and request_id in localStorage
-      localStorage.setItem('email', email);
-      localStorage.setItem('requestId', response.data.data.request_id);
-      // Navigate to '/login' after successful OTP sent
-      navigate('/login');
-      setOtpSent(true); // Set otpSent state to true
+      // console.log(response.data);
+      localStorage.setItem("email", email);
+      localStorage.setItem("requestId", response.data.data.request_id);
+      navigate("/login");
+      setOtpSent(true);
     } catch (error) {
       console.error(error);
-      setError('Failed to send OTP. Please try again.'); // Set error state with error message
+      setError("Failed to send OTP. Please try again.");
       setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
     }
   };
+  
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value); // Update email state with input value

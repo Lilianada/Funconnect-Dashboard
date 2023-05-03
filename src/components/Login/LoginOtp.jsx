@@ -38,7 +38,6 @@ export default function LoginOtp() {
   const login = async (email, otp, requestId) => {
     setLoading(true);
     setError("");
-
     try {
       const response = await axios.post(
         "https://api.funconnect.app/auth/login/otp",
@@ -52,6 +51,13 @@ export default function LoginOtp() {
         console.log("Login successful");
         // Save token in localStorage
         const apiToken = response.data.data.api_token;
+        const oldApiToken = localStorage.getItem("apiToken");
+        
+        // Check if there's an existing apiToken in the storage
+        if (oldApiToken) {
+          localStorage.removeItem("apiToken");
+        }
+        
         localStorage.setItem("apiToken", apiToken);
         setToken(apiToken);
         
@@ -68,6 +74,7 @@ export default function LoginOtp() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="container">

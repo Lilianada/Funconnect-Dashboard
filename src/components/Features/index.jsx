@@ -19,54 +19,53 @@ export default function Features() {
   }, []);
 
   const getFeatures = async (page) => {
-  const apiToken = localStorage.getItem("apiToken");
-  setLoading(true);
-  try {
-    let  url = `https://api.funconnect.app/places/features?page=${currentPage}`
-    if (page) {
-      url = page;
-    }
-    const response = await axios.get(url, {
-      headers: {
-        Accept: "application/json",
-        Authorization: "Bearer " + apiToken,
-      },
-    });
-    setLoading(false);
-    const responseBody = response.data;
-    if (responseBody.message === "OK") {
-      const features = responseBody.data.data;
-      setNextPage(responseBody.data.next_page_url);
-      setPrevPage(responseBody.data.prev_page_url);
-      console.log(responseBody.data)
-      setFeatures(features);
-    } else {
-      setError("Unable to fetch data.");
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+    const apiToken = localStorage.getItem("apiToken");
+    setLoading(true);
+    try {
+      let url = `${baseUrl}/places/features?page=${currentPage}`;
+      if (page) {
+        url = page;
+      }
+      const response = await axios.get(url, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + apiToken,
+        },
+      });
+      setLoading(false);
+      const responseBody = response.data;
+      if (responseBody.message === "OK") {
+        const features = responseBody.data.data;
+        setNextPage(responseBody.data.next_page_url);
+        setPrevPage(responseBody.data.prev_page_url);
+        console.log(responseBody.data);
+        setFeatures(features);
+      } else {
+        setError("Unable to fetch data.");
+        setTimeout(() => setError(""), 4000);
+      }
+    } catch (error) {
+      setError("Unable to fetch data. Please try again.");
       setTimeout(() => setError(""), 4000);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    setError("Unable to fetch data. Please try again.");
-    setTimeout(() => setError(""), 4000);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
+  const handleNextPage = () => {
+    if (nextPage !== null) {
+      getFeatures(nextPage);
+      setCurrentPage(currentPage + 1);
+    }
+  };
 
-const handleNextPage = () => {
-  if (nextPage !== null) {
-    getFeatures(nextPage);
-    setCurrentPage(currentPage + 1);
-  }
-};
-
-const handlePreviousPage = () => {
-  if (prevPage !== null) {
-    getFeatures(prevPage);
-    setCurrentPage(currentPage - 1);
-  }
-};
-
+  const handlePreviousPage = () => {
+    if (prevPage !== null) {
+      getFeatures(prevPage);
+      setCurrentPage(currentPage - 1);
+    }
+  };
 
   //open and close add modal
   const [modal, setModal] = useState(false);
@@ -122,27 +121,25 @@ const handlePreviousPage = () => {
           <EditModal closeModal={closeModal} featureId={featureId} />
         )}
         {modal && <AddModal closeModal={handleModal} />}
-        {
-          nextPage && (
-            <div className="categories__footer">
-              <button
-                className="footer__btn prev"
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <button
-                className="footer__btn next"
-                onClick={handleNextPage}
-                // disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-            </div>
-
-          )
-        }
+        <div className="features__footer">
+          {prevPage && (
+            <button
+              className="footer__btn prev"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+          )}
+          {nextPage && (
+            <button
+              className="footer__btn next"
+              onClick={handleNextPage}
+            >
+              Next
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

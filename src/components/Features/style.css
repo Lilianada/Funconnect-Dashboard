@@ -131,7 +131,31 @@
     }
   }
   
-  @media screen and (min-width: 1024px) {
-      
-    }
-    
+ /* Footer */
+.features__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3rem;
+}
+
+.features__footer .footer__btn {
+  height: 46px;
+  width: 100px;
+  font-size: var(--sixteen);
+  border-radius: 8px;
+  padding: 12px;
+}
+
+.features__footer .footer__btn.next {
+  background-color: var(--primary);
+  color: var(--white);
+
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.features__footer .footer__btn.prev {
+  background-color: var(--gray-dark);
+  color: var(--white);
+}

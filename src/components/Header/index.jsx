@@ -17,8 +17,12 @@ export default function Header() {
     setShowMenu(false);
   };
 
-  const auth = useAuth();
+  const { logout } = useAuth();
 
+  const handleLogout = () => {
+    logout();
+    alert("You have been logged out");
+  };
   return (
     <header>
       {/* Desktop Menu */}
@@ -63,16 +67,16 @@ export default function Header() {
                 Places
               </NavLink>
             </li>
-            {!auth.user && (
               <li className="navItem">
-                <NavLink
+              <NavLink
                   className="navLink"
                   to="/"
+                  onClick={handleLogout}
                 >
-                  Login
+                  Logout
                 </NavLink>
               </li>
-            )}
+            
           </ul>
         </nav>
       </div>
@@ -134,17 +138,15 @@ export default function Header() {
                 Places
               </NavLink>
             </li>
-
-            {!auth.user && (
               <li className="navItem">
                 <NavLink
                   className="navLink"
                   to="/"
+                  onClick={handleLogout}
                 >
-                  Login
+                  Logout
                 </NavLink>
               </li>
-            )}
           </ul>
         </nav>
       </div>

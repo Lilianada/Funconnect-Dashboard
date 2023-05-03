@@ -12,59 +12,59 @@ export default function Categories() {
   const [categoryId, setCategoryId] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [nextPage, setNextPage] = useState(null);
-const [prevPage, setPrevPage] = useState(null);
+  const [prevPage, setPrevPage] = useState(null);
 
-useEffect(() => {
-  getCategories(); // Fetch categories on component mount
-}, []); // Empty dependency array to run effect only once
+  useEffect(() => {
+    getCategories(); // Fetch categories on component mount
+  }, []); // Empty dependency array to run effect only once
 
-const getCategories = async (page) => {
-  const apiToken = localStorage.getItem("apiToken");
-  setLoading(true);
-  try {
-    let url = `https://api.funconnect.app/places/categories?page=${currentPage}`;
-    if (page) {
-      url = page;
+  const getCategories = async (page) => {
+    const baseUrl = process.env.REACT_APP_BASE_URL;
+
+    const apiToken = localStorage.getItem("apiToken");
+    setLoading(true);
+    try {
+      let url = `${baseUrl}/places/categories`;
+      if (page) {
+        url = page;
+      }
+      const response = await axios.get(url, {
+        headers: {
+          Accept: "application/json",
+          Authorization: "Bearer " + apiToken,
+        },
+      });
+      setLoading(false);
+      const responseBody = response.data;
+      if (responseBody.message === "OK") {
+        const categories = responseBody.data.data;
+        setNextPage(responseBody.data.next_page_url);
+        setPrevPage(responseBody.data.prev_page_url);
+        setCategories(categories);
+        setCurrentPage(responseBody.data.current_page);
+        console.log(responseBody.data);
+      } else {
+        setError("Unable to fetch data.");
+      }
+    } catch (error) {
+      setError(`Unable to fetch data: ${error}`);
+    } finally {
+      setLoading(false);
     }
-    const response = await axios.get(url, {
-      headers: {
-        Accept: "application/json",
-        Authorization: "Bearer " + apiToken,
-      },
-    });
-    setLoading(false);
-    const responseBody = response.data;
-    if (responseBody.message === "OK") {
-      const categories = responseBody.data.data;
-      setNextPage(responseBody.data.next_page_url);
-      setPrevPage(responseBody.data.prev_page_url);
-      setCategories(categories);
-      setCurrentPage(responseBody.data.current_page);
-      console.log(responseBody.data.data);
-    } else {
-      setError("Unable to fetch data.");
+  };
+
+  const handleNextPage = () => {
+    if (nextPage !== null) {
+      getCategories(nextPage);
     }
-  } catch (error) {
-    setError("Unable to fetch data. Please try again.");
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
-const handleNextPage = () => {
-  if (nextPage !== null) {
-    getCategories(nextPage);
-  }
-};
+  const handlePreviousPage = () => {
+    if (prevPage !== null) {
+      getCategories(prevPage);
+    }
+  };
 
-const handlePreviousPage = () => {
-  if (prevPage !== null) {
-    getCategories(prevPage);
-  }
-};
-
-
-  
   //open and close add modal
   const [modal, setModal] = useState(false);
   const handleModal = () => {
@@ -76,6 +76,7 @@ const handlePreviousPage = () => {
   function handleEditModal(categoryId) {
     return () => {
       setCategoryId(categoryId);
+      console.log(categoryId);
       setEditModal(true);
     };
   }
@@ -87,7 +88,7 @@ const handlePreviousPage = () => {
   }
 
   return (
-    <div className="">
+    <div>
       <Header />
       <div className="categories">
         <div className="categories__header">
@@ -96,54 +97,49 @@ const handlePreviousPage = () => {
             Add New Category
           </button>
         </div>
-        {
-            loading && <div className="loader">
-                <div className="spinner"></div>
-            </div>
-        }
-          <div className="categories__body">
-            {categories.map((category) => {
-              return (
-                <div
-                  className="category__item"
-                  key={category.id}
-                  onClick={handleEditModal(category.name)}
-                >
-                  <img
-                    className="category__image"
-                    src={category.cover_photo}
-                    alt="cover photos"
-                  />
-                  <p className="category__name">{category.name}</p>
-                </div>
-              );
-            })}
+        {loading && (
+          <div className="loader">
+            <div className="spinner"></div>
           </div>
+        )}
+        <div className="categories__body">
+          {categories.map((category) => {
+            return (
+              <div
+                className="category__item"
+                key={category.id}
+                onClick={handleEditModal(category.name)}
+              >
+                <img
+                  className="category__image"
+                  src={category.cover_photo}
+                  alt="cover photos"
+                />
+                <p className="category__name">{category.name}</p>
+              </div>
+            );
+          })}
+        </div>
         {editModal && (
           <EditModal closeModal={closeModal} categoryId={categoryId} />
         )}
         {modal && <AddModal closeModal={handleModal} />}
-        {
-          nextPage && (
-            <div className="categories__footer">
-              <button
-                className="footer__btn prev"
-                onClick={handlePreviousPage}
-                disabled={currentPage === 1}
-              >
-                Previous
-              </button>
-              <button
-                className="footer__btn next"
-                onClick={handleNextPage}
-                // disabled={currentPage === totalPages}
-              >
-                Next
-              </button>
-            </div>
-
-          )
-        }
+        <div className="categories__footer">
+          {prevPage && (
+            <button
+              className="footer__btn prev"
+              onClick={handlePreviousPage}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </button>
+          )}
+          {nextPage && (
+            <button className="footer__btn next" onClick={handleNextPage}>
+              Next
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

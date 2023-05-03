@@ -152,6 +152,8 @@
 .places__footer .footer__btn.next {
   background-color: var(--primary);
   color: var(--white);
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .places__footer .footer__btn.prev {

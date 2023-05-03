@@ -61,6 +61,8 @@ export default function AddModal({ closeModal }) {
       setLoading(false);
     }
   };
+  
+  const baseUrl = process.env.REACT_APP_BASE_URL;
 
   //get categories
   useEffect(() => {
@@ -68,7 +70,7 @@ export default function AddModal({ closeModal }) {
       setLoading(true);
       try {
         const apiToken = localStorage.getItem("apiToken");
-        let url = "https://api.funconnect.app/places/categories";
+        let url = `${baseUrl}/places/categories`;
         const response = await axios.get(url, {
           headers: {
             Accept: "application/json",
@@ -168,6 +170,7 @@ export default function AddModal({ closeModal }) {
           </div>
           <div className="form__group">
             <select className="form__field" placeholder="Categories">
+              <option placeholder="Categories" defaultValue={'Pick One'} style={{color: '#e0e0e0'}}></option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}

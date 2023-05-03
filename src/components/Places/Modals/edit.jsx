@@ -44,6 +44,7 @@ export default function EditModal({ closeModal, placeId }) {
         const categories = response.data.data.categories.map(
           (category) => category.name
         );
+        console.log(placeData);
 
         setPlaceData({
           name: response.data.data.name,
@@ -63,6 +64,7 @@ export default function EditModal({ closeModal, placeId }) {
           categories: categories,
         });
       } catch (error) {
+        console.log(error);
         setError("Unable to fetch resource.");
         setTimeout(() => setError(""), 4000);
       } finally {
@@ -121,11 +123,11 @@ const handleSubmit = async (event) => {
     }
   });
 
-  const url = 'https://api.funconnect.app/places/97f837d5-5034-41c7-bea1-616eb877bbb8';
-  const apiKey = '5ad9198a-4d20-45bc-afc0-a05b15bd6720';
+  const baseUrl = process.env.REACT_APP_BASE_URL;
+  const apiKey = process.env.REACT_APP_API_KEY;
 
   try {
-    const response = await axios.post(url, formData, {
+    const response = await axios.post(`${baseUrl}/places/${placeId}`, formData, {
       headers: {
         Accept: "application/json",
         Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
@@ -147,6 +149,7 @@ const handleSubmit = async (event) => {
       setTimeout(() => setError(""), 4000);
     }
   } catch (error) {
+    console.error(error);
     if (error.response) {
       setError(error.response.data.message);
     } else if (error.request) {
