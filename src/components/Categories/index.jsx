@@ -42,7 +42,6 @@ export default function Categories() {
         setPrevPage(responseBody.data.prev_page_url);
         setCategories(categories);
         setCurrentPage(responseBody.data.current_page);
-        console.log(categories.id);
       } else {
         setError("Unable to fetch data.");
       }
@@ -58,7 +57,6 @@ export default function Categories() {
    function handleEditModal(categoryId) {
      return () => {
        setCategoryId(categoryId);
-       console.log(categoryId);
        setEditModal(true);
      };
    }

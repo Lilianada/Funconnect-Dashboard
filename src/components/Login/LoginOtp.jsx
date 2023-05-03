@@ -44,11 +44,9 @@ export default function LoginOtp() {
         { email, otp, request_id: requestId },
         { headers: { Accept: "application/json" } }
       );
-
-      console.log(response.data);
       // Check if OTP verification was successful
       if (response.data.message === "OK") {
-        console.log("Login successful");
+        alert("Login successful");
         // Save token in localStorage
         const apiToken = response.data.data.api_token;
         const oldApiToken = localStorage.getItem("apiToken");
