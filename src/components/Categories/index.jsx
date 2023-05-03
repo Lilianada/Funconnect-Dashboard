@@ -20,7 +20,7 @@ export default function Categories() {
 
   const getCategories = async (page) => {
     const baseUrl = process.env.REACT_APP_BASE_URL;
-
+  
     const apiToken = localStorage.getItem("apiToken");
     setLoading(true);
     try {
@@ -42,7 +42,7 @@ export default function Categories() {
         setPrevPage(responseBody.data.prev_page_url);
         setCategories(categories);
         setCurrentPage(responseBody.data.current_page);
-        console.log(responseBody.data);
+        console.log(categories.id);
       } else {
         setError("Unable to fetch data.");
       }
@@ -52,6 +52,24 @@ export default function Categories() {
       setLoading(false);
     }
   };
+
+   //opens edit modal
+   const [editModal, setEditModal] = useState(false);
+   function handleEditModal(categoryId) {
+     return () => {
+       setCategoryId(categoryId);
+       console.log(categoryId);
+       setEditModal(true);
+     };
+   }
+ 
+   //closes edit modal
+   function closeModal() {
+     setEditModal(false);
+     setCategoryId(null);
+   }
+ 
+  
 
   const handleNextPage = () => {
     if (nextPage !== null) {
@@ -71,22 +89,7 @@ export default function Categories() {
     setModal(!modal);
   };
 
-  //opens edit modal
-  const [editModal, setEditModal] = useState(false);
-  function handleEditModal(categoryId) {
-    return () => {
-      setCategoryId(categoryId);
-      console.log(categoryId);
-      setEditModal(true);
-    };
-  }
-
-  //closes edit modal
-  function closeModal() {
-    setEditModal(false);
-    setCategoryId(null);
-  }
-
+ 
   return (
     <div>
       <Header />
@@ -108,7 +111,7 @@ export default function Categories() {
               <div
                 className="category__item"
                 key={category.id}
-                onClick={handleEditModal(category.name)}
+                onClick={handleEditModal(category.id)}
               >
                 <img
                   className="category__image"
