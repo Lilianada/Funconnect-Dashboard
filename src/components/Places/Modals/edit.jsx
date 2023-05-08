@@ -203,7 +203,7 @@ const handleSubmit = async (event) => {
           ></textarea>
           <div className="form__group">
             <input
-              type="text"
+              type="time"
               className="form__field"
               placeholder="Opens at"
               name="opens_at"
@@ -212,7 +212,7 @@ const handleSubmit = async (event) => {
               required
             />
             <input
-              type="text"
+              type="time"
               className="form__field"
               placeholder="Closes at"
               name="closes_at"
