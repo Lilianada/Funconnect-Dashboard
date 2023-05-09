@@ -142,13 +142,13 @@ export default function AddModal({ closeModal }) {
           ></textarea>
           <div className="form__group">
             <input
-              type="text"
+              type="time"
               className="form__field"
               placeholder="Opens at"
               name="opens_at"
             />
             <input
-              type="text"
+              type="time"
               className="form__field"
               placeholder="Closes at"
               name="closes_at"
