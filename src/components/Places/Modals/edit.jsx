@@ -3,10 +3,12 @@ import Dialog from "../../Dialog";
 import axios from "axios";
 import "./style.css";
 
+// Define the EditModal component
 export default function EditModal({ closeModal, placeId }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [categories, setCategories] = useState([]);
   const [placeData, setPlaceData] = useState({
     name: "",
     address: "",
@@ -23,50 +25,78 @@ export default function EditModal({ closeModal, placeId }) {
     cover_image_path: null,
   });
 
-  // Get data
+  // Get categories
+  useEffect(() => {
+    const getCategories = async () => {
+      setLoading(true);
+      try {
+        const apiToken = localStorage.getItem("apiToken");
+        const url = `${process.env.REACT_APP_BASE_URL}/places/categories`;
+        const response = await axios.get(url, {
+          headers: {
+            Accept: "application/json",
+            Authorization: `Bearer ${apiToken}`,
+          },
+        });
+        const responseBody = response.data;
+        if (responseBody.message === "OK") {
+          const allCategories = responseBody.data.data.map((category) => ({
+            id: category.id,
+            name: category.name,
+          }));
+          setCategories(allCategories);
+        } else {
+          throw new Error("Unable to fetch categories.");
+        }
+      } catch (error) {
+        console.error(error);
+        setError("Unable to fetch categories.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    getCategories();
+  }, []);
+
+  // Get place data
   useEffect(() => {
     const getPlaceData = async () => {
       setLoading(true);
-
-      const baseUrl = process.env.REACT_APP_BASE_URL;
-      const apiKey = process.env.REACT_APP_API_KEY;
       try {
-        const response = await axios.get(`${baseUrl}/places/${placeId}`, {
-          headers: {
-            Accept: "application/json",
-            Authorization: "Bearer " + localStorage.getItem("apiToken"),
-            "Content-Type": "multipart/form-data",
-            "x-api-key": apiKey,
-          },
-          maxBodyLength: Infinity,
-        });
-        setLoading(false);
-        const categories = response.data.data.categories.map(
-          (category) => category.name
+        const response = await axios.get(
+          `${process.env.REACT_APP_BASE_URL}/places/${placeId}`,
+          {
+            headers: {
+              Accept: "application/json",
+              Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
+              "Content-Type": "multipart/form-data",
+              "x-api-key": process.env.REACT_APP_API_KEY,
+            },
+            maxBodyLength: Infinity,
+          }
         );
-        console.log(placeData);
-
+        const place = response.data.data;
+        const categories = place.categories.map((category) => category.name);
         setPlaceData({
-          name: response.data.data.name,
-          address: response.data.data.address,
-          headline: response.data.data.headline,
-          description: response.data.data.description,
-          country: response.data.data.country,
-          state: response.data.data.state,
-          city: response.data.data.city,
-          email: response.data.data.email,
-          closes_at: response.data.data.closes_at,
-          opens_at: response.data.data.opens_at,
-          phone_e164: response.data.data.phone_e164,
-          longitude: response.data.data.longitude,
-          latitude: response.data.data.latitude,
-          cover_image_path: response.data.data.cover_image_path,
+          name: place.name,
+          address: place.address,
+          headline: place.headline,
+          description: place.description,
+          country: place.country,
+          state: place.state,
+          city: place.city,
+          email: place.email,
+          closes_at: place.closes_at,
+          opens_at: place.opens_at,
+          phone_e164: place.phone_e164,
+          longitude: place.longitude,
+          latitude: place.latitude,
+          cover_image_path: place.cover_image_path,
           categories: categories,
         });
       } catch (error) {
-        console.log(error);
-        setError("Unable to fetch resource.");
-        setTimeout(() => setError(""), 4000);
+        console.error(error);
+        setError("Unable to fetch place data.");
       } finally {
         setLoading(false);
       }
@@ -75,93 +105,60 @@ export default function EditModal({ closeModal, placeId }) {
   }, [placeId]);
 
   // Handle input change
-const handleInputChange = (event) => {
-  const { name, value } = event.target;
-  if (name === "cover_image_path") {
-    setPlaceData((prevData) => ({
-      ...prevData,
-      cover_image_path: event.target.files[0] || null,
-    }));
-  } else if (name === "features") {
-    setPlaceData((prevData) => ({
-      ...prevData,
-      features: prevData.features.includes(value)
-        ? prevData.features.filter((feature) => feature !== value)
-        : [...prevData.features, value],
-    }));
-  } else {
-    setPlaceData((prevData) => ({
-      ...prevData,
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setPlaceData((prevState) => ({
+      ...prevState,
       [name]: value,
     }));
-  }
-};
+  };
 
-// Define the category change handler
-const handleCategoryChange = (event) => {
-  const { value } = event.target;
-  setPlaceData((prevData) => ({
-    ...prevData,
-    categories: value.split(",").map((category) => category.trim()),
-  }));
-};
+  // Handle category change
+  const handleCategoryChange = (event) => {
+    const selectedCategories = Array.from(
+      event.target.selectedOptions,
+      (option) => option.value
+    );
+    setPlaceData((prevState) => ({
+      ...prevState,
+      categories: selectedCategories,
+    }));
+  };
 
-
-// Define the submit handler
-const handleSubmit = async (event) => {
-  event.preventDefault();
-  setLoading(true);
-
-  const formData = new FormData();
-  Object.entries(placeData).forEach(([key, value]) => {
-    if (key === "categories") {
-      value.forEach((category) => {
-        formData.append("categories[]", category);
+  // Handle form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setLoading(true);
+    try {
+      const apiToken = localStorage.getItem("apiToken");
+      const url = `${process.env.REACT_APP_BASE_URL}/places/${placeId}`;
+      const formData = new FormData();
+      Object.entries(placeData).forEach(([key, value]) => {
+        if (value !== null && value !== "") {
+          formData.append(key, value);
+        }
       });
-    } else {
-      formData.append(key, value);
+      const response = await axios.put(url, formData, {
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${apiToken}`,
+          "Content-Type": "multipart/form-data",
+          "x-api-key": process.env.REACT_APP_API_KEY,
+        },
+      });
+      const responseBody = response.data;
+      if (responseBody.message === "OK") {
+        setSuccess("Place updated successfully!");
+      } else {
+        throw new Error("Unable to update place.");
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Unable to update place.");
+    } finally {
+      setLoading(false);
     }
-  });
-
-  const baseUrl = process.env.REACT_APP_BASE_URL;
-  const apiKey = process.env.REACT_APP_API_KEY;
-
-  try {
-    const response = await axios.post(`${baseUrl}/places/${placeId}`, formData, {
-      headers: {
-        Accept: "application/json",
-        Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
-        "x-api-key": apiKey,
-        
-      },
-    });
-
-    setLoading(false);
-    const resp = response.data.message;
-    if (resp === "Updated") {
-      setSuccess("Place updated successfully!");
-      setTimeout(() => {
-        setSuccess("");
-        window.location.reload();
-      }, 4000);
-    } else {
-      setError(response.data.error);
-      setTimeout(() => setError(""), 4000);
-    }
-  } catch (error) {
-    console.error(error);
-    if (error.response) {
-      setError(error.response.data.message);
-    } else if (error.request) {
-      setError("Unable to make request. Please try again later.");
-    } else {
-      setError("An error occurred. Please try again later.");
-    }
-    setTimeout(() => setError(""), 4000);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   return (
     <Dialog>
@@ -239,14 +236,21 @@ const handleSubmit = async (event) => {
             />
           </div>
           <div className="form__group">
-            <input
-              type="text"
-              className="form__field"
-              placeholder="Category"
+            <select
               name="categories"
+              id="categories"
+              className="form__field"
               value={placeData.categories}
               onChange={handleCategoryChange}
-            />
+              // multiple
+              required
+            >
+              {categories.map((category) => (
+                <option key={category._id} value={category._id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
             <div className="form__field">
               <input
                 type="file"
@@ -254,7 +258,11 @@ const handleSubmit = async (event) => {
                 placeholder="Cover photo (Choose file)"
                 onChange={handleInputChange}
               />
-              <img src={placeData.cover_image_path} alt="" className="form__image" />
+              <img
+                src={placeData.cover_image_path}
+                alt=""
+                className="form__image"
+              />
             </div>
           </div>
           <textarea
