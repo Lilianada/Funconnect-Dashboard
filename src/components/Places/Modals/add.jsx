@@ -61,7 +61,7 @@ export default function AddModal({ closeModal }) {
       setLoading(false);
     }
   };
-  
+
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
   //get categories
@@ -169,8 +169,12 @@ export default function AddModal({ closeModal }) {
             />
           </div>
           <div className="form__group">
-            <select className="form__field" placeholder="Categories">
-              <option placeholder="Categories" defaultValue={'Pick One'} style={{color: '#e0e0e0'}}></option>
+            <select className="form__field" placeholder="Categories" >
+              <option
+                placeholder="Categories"
+                defaultValue={"Pick One"}
+                style={{ color: "#e0e0e0" }}
+              ></option>
               {categories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import Dialog from "../../Dialog";
+import Multiselect from "multiselect-react-dropdown";
 import axios from "axios";
 import "./style.css";
 
@@ -9,6 +10,7 @@ export default function EditModal({ closeModal, placeId }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
   const [placeData, setPlaceData] = useState({
     name: "",
     address: "",
@@ -19,8 +21,8 @@ export default function EditModal({ closeModal, placeId }) {
     city: "",
     email: "",
     categories: [],
-    closes_at: "",
     opens_at: "",
+    closes_at: "",
     phone_e164: "",
     cover_image_path: null,
   });
@@ -79,21 +81,22 @@ export default function EditModal({ closeModal, placeId }) {
         const categories = place.categories.map((category) => category.name);
         setPlaceData({
           name: place.name,
-          address: place.address,
+          address: place.location.address,
           headline: place.headline,
           description: place.description,
-          country: place.country,
-          state: place.state,
-          city: place.city,
-          email: place.email,
+          country: place.location.country,
+          state: place.location.state,
+          city: place.location.city,
+          email: place.email_address,
           closes_at: place.closes_at,
           opens_at: place.opens_at,
           phone_e164: place.phone_e164,
-          longitude: place.longitude,
-          latitude: place.latitude,
+          longitude: place.location.long,
+          latitude: place.location.lat,
           cover_image_path: place.cover_image_path,
-          categories: categories,
+          categories: place.categories,
         });
+        console.log(place);
       } catch (error) {
         console.error(error);
         setError("Unable to fetch place data.");
@@ -107,22 +110,28 @@ export default function EditModal({ closeModal, placeId }) {
   // Handle input change
   const handleInputChange = (event) => {
     const { name, value } = event.target;
-    setPlaceData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
 
-  // Handle category change
-  const handleCategoryChange = (event) => {
-    const selectedCategories = Array.from(
-      event.target.selectedOptions,
-      (option) => option.value
-    );
-    setPlaceData((prevState) => ({
-      ...prevState,
-      categories: selectedCategories,
-    }));
+    // Check if the input is a time field
+    if (event.target.type === "time") {
+      // Split the value into hours and minutes
+      const [hours, minutes] = value.split(":");
+
+      // Format the time as "H:i"
+      const formattedTime = `${hours.padStart(2, "0")}:${minutes.padStart(
+        2,
+        "0"
+      )}`;
+
+      setPlaceData((prevState) => ({
+        ...prevState,
+        [name]: formattedTime,
+      }));
+    } else {
+      setPlaceData((prevState) => ({
+        ...prevState,
+        [name]: value,
+      }));
+    }
   };
 
   // Handle form submission
@@ -135,10 +144,14 @@ export default function EditModal({ closeModal, placeId }) {
       const formData = new FormData();
       Object.entries(placeData).forEach(([key, value]) => {
         if (value !== null && value !== "") {
-          formData.append(key, value);
+          if (key === "categories") {
+            formData.append(key, JSON.stringify(selectedCategories));
+          } else {
+            formData.append(key, value);
+          }
         }
       });
-      const response = await axios.put(url, formData, {
+      const response = await axios.post(url, formData, {
         headers: {
           Accept: "application/json",
           Authorization: `Bearer ${apiToken}`,
@@ -147,14 +160,19 @@ export default function EditModal({ closeModal, placeId }) {
         },
       });
       const responseBody = response.data;
-      if (responseBody.message === "OK") {
+      if (responseBody.message === "Updated") {
         setSuccess("Place updated successfully!");
+        setTimeout(() => setSuccess(""), 4000);
+        console.log(responseBody);
       } else {
-        throw new Error("Unable to update place.");
+        const error = response.message;
+        setError(error);
+        setTimeout(() => setError(""), 4000);
       }
     } catch (error) {
       console.error(error);
       setError("Unable to update place.");
+      setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
     }
@@ -235,22 +253,32 @@ export default function EditModal({ closeModal, placeId }) {
               onChange={handleInputChange}
             />
           </div>
+          <Multiselect
+  options={categories.map((category) => ({
+    key: category.id,
+    value: category.name,
+  }))}
+  selectedValues={
+    Array.isArray(selectedCategories)
+      ? selectedCategories.map((categoryId) => ({
+          key: categoryId,
+          value: categories.find((category) => category.id === categoryId)?.name,
+        }))
+      : []
+  }
+  displayValue="value"
+  onSelect={(selectedList) => {
+    const selectedCategories = selectedList.map((item) => item.key);
+    setSelectedCategories(selectedCategories);
+  }}
+  onRemove={(selectedList) => {
+    const selectedCategories = selectedList.map((item) => item.key);
+    setSelectedCategories(selectedCategories);
+  }}
+  placeholder="Select categories"
+  className="select__field"
+/>
           <div className="form__group">
-            <select
-              name="categories"
-              id="categories"
-              className="form__field"
-              value={placeData.categories}
-              onChange={handleCategoryChange}
-              // multiple
-              required
-            >
-              {categories.map((category) => (
-                <option key={category._id} value={category._id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
             <div className="form__field">
               <input
                 type="file"

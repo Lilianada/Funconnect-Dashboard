@@ -32,6 +32,22 @@
   justify-content: space-between;
   align-items: center;
 }
+.wrap__places .places__form .select__field {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.wrap__places .places__form .select__field .searchWrapper {
+  border-radius: 8px;
+  padding: 0.75rem;
+  border: 1px solid var(--gray);
+  font-weight: 400;
+  font-size: var(--sixteen);
+}
+
+.wrap__places .places__form .select__field .searchWrapper .chip {
+  background: var(--primary);
+}
 
 .wrap__places .places__form .form__text {
   width: 100%;
@@ -49,7 +65,7 @@
 }
 
 .wrap__places .places__form .form__text::placeholder,
-.wrap__places .places__form .form__field::placeholder{
+.wrap__places .places__form .form__field::placeholder {
   color: var(--gray-dark);
 }
 
@@ -131,4 +147,3 @@
 .places__header input[type="checkbox"]:checked + label:before {
   transform: translateX(26px);
 }
-
