@@ -24,7 +24,7 @@ export default function EditModal({ closeModal, placeId }) {
     opens_at: "",
     closes_at: "",
     phone_e164: "",
-    cover_image_path: null,
+    cover_photo: null,
   });
 
   // Get categories
@@ -60,8 +60,33 @@ export default function EditModal({ closeModal, placeId }) {
     getCategories();
   }, []);
 
+  // Handle input change
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    if (name === "cover_photo") {
+      setPlaceData((prevData) => ({
+        ...prevData,
+        cover_photo: event.target.files[0] || null,
+      }));
+    } else if (name === "categories") {
+      const selectedCategories = event.target.value;
+      setPlaceData((prevData) => ({
+        ...prevData,
+        categories: selectedCategories,
+      }));
+    } else {
+      setPlaceData((prevData) => ({
+        ...prevData,
+        [name]: value || "",
+      }));
+    }
+  };
+  
+
   // Get place data
   useEffect(() => {
+    let source = axios.CancelToken.source();
+
     const getPlaceData = async () => {
       setLoading(true);
       try {
@@ -75,11 +100,13 @@ export default function EditModal({ closeModal, placeId }) {
               "x-api-key": process.env.REACT_APP_API_KEY,
             },
             maxBodyLength: Infinity,
+            cancelToken: source.token,
           }
         );
         const place = response.data.data;
-        const categories = place.categories.map((category) => category.name);
-        setPlaceData({
+        // Set placeData with the extracted base URL
+        setPlaceData((prevState) => ({
+          ...prevState,
           name: place.name,
           address: place.location.address,
           headline: place.headline,
@@ -93,64 +120,63 @@ export default function EditModal({ closeModal, placeId }) {
           phone_e164: place.phone_e164,
           longitude: place.location.long,
           latitude: place.location.lat,
-          cover_image_path: place.cover_image_path,
+          cover_photo: place.cover_image_path,
           categories: place.categories,
-        });
-        console.log(place);
+        }));
       } catch (error) {
-        console.error(error);
-        setError("Unable to fetch place data.");
+        if (!axios.isCancel(error)) {
+          console.error(error);
+          setError("Unable to fetch place data.");
+        }
       } finally {
         setLoading(false);
       }
     };
+
     getPlaceData();
-  }, [placeId]);
 
-  // Handle input change
-  const handleInputChange = (event) => {
-    const { name, value } = event.target;
+    return () => {
+      source.cancel("Request canceled");
+    };
+  }, []);
 
-    // Check if the input is a time field
-    if (event.target.type === "time") {
-      // Split the value into hours and minutes
-      const [hours, minutes] = value.split(":");
-
-      // Format the time as "H:i"
-      const formattedTime = `${hours.padStart(2, "0")}:${minutes.padStart(
-        2,
-        "0"
-      )}`;
-
-      setPlaceData((prevState) => ({
-        ...prevState,
-        [name]: formattedTime,
-      }));
-    } else {
-      setPlaceData((prevState) => ({
-        ...prevState,
-        [name]: value,
-      }));
-    }
-  };
-
-  // Handle form submission
+  //handle submit
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
     try {
       const apiToken = localStorage.getItem("apiToken");
       const url = `${process.env.REACT_APP_BASE_URL}/places/${placeId}`;
+  
       const formData = new FormData();
-      Object.entries(placeData).forEach(([key, value]) => {
-        if (value !== null && value !== "") {
-          if (key === "categories") {
-            formData.append(key, JSON.stringify(selectedCategories));
-          } else {
-            formData.append(key, value);
-          }
-        }
+      formData.append("name", placeData.name);
+      formData.append("address", placeData.address);
+      formData.append("headline", placeData.headline);
+      formData.append("description", placeData.description);
+      formData.append("country", placeData.country);
+      // Check if cover photo is selected
+    if (placeData.cover_photo) {
+      formData.append("cover_photo", placeData.cover_photo);
+    }else {
+      // Handle the case when the cover photo is not provided
+      setError("The cover photo field is required.");
+      setLoading(false);
+      return;
+    }
+
+      formData.append("state", placeData.state);
+      formData.append("city", placeData.city);
+      formData.append("email", placeData.email);
+      formData.append("closes_at", placeData.closes_at);
+      formData.append("opens_at", placeData.opens_at);
+      formData.append("phone_e164", placeData.phone_e164);
+      formData.append("longitude", placeData.longitude);
+      formData.append("latitude", placeData.latitude);
+      placeData.categories.forEach((category) => {
+        formData.append("categories[]", category);
+        console.log(category);
       });
+  
       const response = await axios.post(url, formData, {
         headers: {
           Accept: "application/json",
@@ -159,24 +185,26 @@ export default function EditModal({ closeModal, placeId }) {
           "x-api-key": process.env.REACT_APP_API_KEY,
         },
       });
+  
       const responseBody = response.data;
-      if (responseBody.message === "Updated") {
+      if (responseBody.message.toLowerCase() === "updated") {
         setSuccess("Place updated successfully!");
         setTimeout(() => setSuccess(""), 4000);
         console.log(responseBody);
       } else {
-        const error = response.message;
+        const error = response.data.message;
         setError(error);
         setTimeout(() => setError(""), 4000);
       }
     } catch (error) {
       console.error(error);
-      setError("Unable to update place.");
+      setError("Unable to post resource.");
       setTimeout(() => setError(""), 4000);
     } finally {
       setLoading(false);
     }
   };
+  
 
   return (
     <Dialog>
@@ -254,40 +282,39 @@ export default function EditModal({ closeModal, placeId }) {
             />
           </div>
           <Multiselect
-  options={categories.map((category) => ({
-    key: category.id,
-    value: category.name,
-  }))}
-  selectedValues={
-    Array.isArray(selectedCategories)
-      ? selectedCategories.map((categoryId) => ({
-          key: categoryId,
-          value: categories.find((category) => category.id === categoryId)?.name,
-        }))
-      : []
-  }
-  displayValue="value"
-  onSelect={(selectedList) => {
-    const selectedCategories = selectedList.map((item) => item.key);
-    setSelectedCategories(selectedCategories);
-  }}
-  onRemove={(selectedList) => {
-    const selectedCategories = selectedList.map((item) => item.key);
-    setSelectedCategories(selectedCategories);
-  }}
-  placeholder="Select categories"
-  className="select__field"
-/>
+            options={categories.map((category) => ({
+              key: category.id,
+              value: category.name,
+            }))}
+            selectedValues={selectedCategories.map((categoryId) => ({
+              key: categoryId,
+              value: categories.find((category) => category.id === categoryId)
+                ?.name,
+            }))}
+            displayValue="value"
+            onSelect={(selectedList) => {
+              const selectedCategories = selectedList.map((item) => item.key);
+              setSelectedCategories(selectedCategories);
+            }}
+            onRemove={(selectedList) => {
+              const selectedCategories = selectedList.map((item) => item.key);
+              setSelectedCategories(selectedCategories);
+            }}
+            placeholder="Select categories"
+            className="select__field"
+            name="categories"
+          />
+
           <div className="form__group">
             <div className="form__field">
               <input
                 type="file"
-                name="cover_image_path"
+                name="cover_photo"
                 placeholder="Cover photo (Choose file)"
                 onChange={handleInputChange}
               />
               <img
-                src={placeData.cover_image_path}
+                src={placeData.cover_photo}
                 alt=""
                 className="form__image"
               />

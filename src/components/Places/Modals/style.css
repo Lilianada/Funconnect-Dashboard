@@ -32,16 +32,18 @@
   justify-content: space-between;
   align-items: center;
 }
-.wrap__places .places__form .select__field {
-  width: 100%;
-  margin-bottom: 1.5rem;
-}
 
 .wrap__places .places__form .select__field .searchWrapper {
   border-radius: 8px;
   padding: 0.75rem;
   border: 1px solid var(--gray);
   font-weight: 400;
+  font-size: var(--sixteen);
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+div .wrap__places .places__form .select__field .searchWrapper ::placeholder {
   font-size: var(--sixteen);
 }
 

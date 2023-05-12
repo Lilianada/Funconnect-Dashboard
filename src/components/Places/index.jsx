@@ -15,7 +15,8 @@ export default function Places() {
   const [prevPage, setPrevPage] = useState(null);
 
   useEffect(() => {
-    getPlaces(); // Fetch places on component mount
+    getPlaces(); 
+    console.log("Unmounted");
   }, []); // Empty dependency array to run effect only once
 
   const getPlaces = async (page) => {
@@ -50,6 +51,7 @@ export default function Places() {
     } finally {
       setLoading(false);
     }
+    console.log("1Unmounted");
   };
 
   const handleNextPage = () => {

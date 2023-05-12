@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Dialog from "../../Dialog";
 import axios from "axios";
+import Multiselect from "multiselect-react-dropdown";
 import "./style.css";
 
 export default function AddModal({ closeModal }) {
@@ -8,41 +9,60 @@ export default function AddModal({ closeModal }) {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [categories, setCategories] = useState([]);
+  const [selectedCategories, setSelectedCategories] = useState([]);
 
   const postPlaces = async (event) => {
     event.preventDefault();
     setLoading(true);
-
+  
     const baseUrl = process.env.REACT_APP_BASE_URL;
     const apiKey = process.env.REACT_APP_API_KEY;
-
+  
     const formData = new FormData();
     formData.append("name", event.target.elements.name.value);
     formData.append("headline", event.target.elements.headline.value);
     formData.append("description", event.target.elements.description.value);
-    formData.append("address", event.target.elements.address.value);
-    formData.append("country", event.target.elements.country.value);
-    formData.append("state", event.target.elements.state.value);
-    formData.append("city", event.target.elements.city.value);
-    formData.append("closes_at", event.target.elements.closes_at.value);
-    formData.append("opens_at", event.target.elements.opens_at.value);
+    formData.append("opens_at", event.target.elements.opens_at.value + ":00");
+    formData.append("closes_at", event.target.elements.closes_at.value + ":00");
     formData.append("phone_e164", event.target.elements.phone_e164.value);
+    formData.append("address", event.target.elements.address.value);
+    formData.append("city", event.target.elements.city.value);
+    formData.append("state", event.target.elements.state.value);
+    formData.append("country", event.target.elements.country.value);
+    formData.append("latitude", event.target.elements.latitude.value);
+    formData.append("longitude", event.target.elements.longitude.value);
+    
+    
+    const _selectedCategories = []; // Initialize as an empty array
+    selectedCategories.forEach((category) => {
+      formData.append("categories[]", category);
+      _selectedCategories.push(category); // Add category to selectedCategories
+      console.log(category);
+    });
+  
     const coverPhoto = event.target.elements.cover_photo.files[0];
     if (coverPhoto) {
       formData.append("cover_photo", coverPhoto);
+    } else {
+      // Handle the case when the cover photo is not provided
+      setError("The cover photo field is required.");
+      setLoading(false);
+      return;
     }
-
+  
     try {
       const response = await axios.post(`${baseUrl}/places`, formData, {
         headers: {
           Accept: "application/json",
-          Authorization: "Bearer " + localStorage.getItem("apiToken"),
+          Authorization: `Bearer ${localStorage.getItem("apiToken")}`,
           "Content-Type": "multipart/form-data",
           "x-api-key": apiKey,
         },
         maxBodyLength: Infinity,
       });
+  
       setLoading(false);
+  
       if (response.data.message === "Resource Created.") {
         setSuccess("Resource created successfully!");
         setTimeout(() => {
@@ -61,6 +81,7 @@ export default function AddModal({ closeModal }) {
       setLoading(false);
     }
   };
+  
 
   const baseUrl = process.env.REACT_APP_BASE_URL;
 
@@ -168,27 +189,37 @@ export default function AddModal({ closeModal }) {
               name="email"
             />
           </div>
-          <div className="form__group">
-            <select className="form__field" placeholder="Categories" >
-              <option
-                placeholder="Categories"
-                defaultValue={"Pick One"}
-                style={{ color: "#e0e0e0" }}
-              ></option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.name}
-                </option>
-              ))}
-            </select>
 
-            <input
-              type="file"
-              className="form__field"
-              placeholder="Cover photo (Choose file)"
-              name="cover_photo"
-            />
-          </div>
+          <Multiselect
+            options={categories.map((category) => ({
+              key: category.id,
+              value: category.name,
+            }))}
+            selectedValues={selectedCategories.map((categoryId) => ({
+              key: categoryId,
+              value: categories.find((category) => category.id === categoryId)
+                ?.name,
+            }))}
+            displayValue="value"
+            onSelect={(selectedList) => {
+              const selectedCategories = selectedList.map((item) => item.key);
+              setSelectedCategories(selectedCategories);
+            }}
+            onRemove={(selectedList) => {
+              const selectedCategories = selectedList.map((item) => item.key);
+              setSelectedCategories(selectedCategories);
+            }}
+            placeholder="Select categories"
+            className="select__field"
+            style={{ width: "100%" }}
+          />
+
+          <input
+            type="file"
+            className="form__field"
+            placeholder="Cover photo (Choose file)"
+            name="cover_photo"
+          />
           <textarea
             name="address"
             className="form__text"
@@ -221,13 +252,13 @@ export default function AddModal({ closeModal }) {
               type="text"
               className="form__field"
               placeholder="Lat. (optional)"
-              name="lat"
+              name="latitude"
             />
             <input
               type="text"
               className="form__field"
               placeholder="Long. (optional)"
-              name="long"
+              name="longitude"
             />
           </div>
           {success && <p className="success__message">{success}</p>}
