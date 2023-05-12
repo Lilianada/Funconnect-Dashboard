@@ -19,20 +19,29 @@ export default function AddModal({ closeModal }) {
     const apiKey = process.env.REACT_APP_API_KEY;
   
     const formData = new FormData();
-    formData.append("name", event.target.elements.name.value);
-    formData.append("headline", event.target.elements.headline.value);
-    formData.append("description", event.target.elements.description.value);
-    formData.append("opens_at", event.target.elements.opens_at.value + ":00");
-    formData.append("closes_at", event.target.elements.closes_at.value + ":00");
-    formData.append("phone_e164", event.target.elements.phone_e164.value);
-    formData.append("address", event.target.elements.address.value);
-    formData.append("city", event.target.elements.city.value);
-    formData.append("state", event.target.elements.state.value);
-    formData.append("country", event.target.elements.country.value);
-    formData.append("latitude", event.target.elements.latitude.value);
-    formData.append("longitude", event.target.elements.longitude.value);
-    
-    
+    formData.append("name", event.target.elements.name.value.trim());
+    formData.append("headline", event.target.elements.headline.value.trim());
+    formData.append(
+      "description",
+      event.target.elements.description.value.trim()
+    );
+    formData.append(
+      "opens_at",
+      event.target.elements.opens_at.value.trim() + ":00"
+    );
+    formData.append(
+      "closes_at",
+      event.target.elements.closes_at.value.trim() + ":00"
+    );
+    formData.append(
+      "phone_e164",
+      event.target.elements.phone_e164.value.trim()
+    );
+    formData.append("address", event.target.elements.address.value.trim());
+    formData.append("city", event.target.elements.city.value.trim());
+    formData.append("state", event.target.elements.state.value.trim());
+    formData.append("country", event.target.elements.country.value.trim());
+  
     const _selectedCategories = []; // Initialize as an empty array
     selectedCategories.forEach((category) => {
       formData.append("categories[]", category);
@@ -49,6 +58,15 @@ export default function AddModal({ closeModal }) {
       setLoading(false);
       return;
     }
+  
+    // Optional fields
+    const optionalFields = ["latitude", "longitude"];
+    optionalFields.forEach((field) => {
+      const value = event.target.elements[field].value.trim();
+      if (value !== "") {
+        formData.append(field, value);
+      }
+    });
   
     try {
       const response = await axios.post(`${baseUrl}/places`, formData, {
@@ -147,12 +165,14 @@ export default function AddModal({ closeModal }) {
             className="form__field"
             placeholder="Name"
             name="name"
+            required
           />
           <input
             type="text"
             className="form__field"
             placeholder="Headline"
             name="headline"
+            required
           />
           <textarea
             name="description"
@@ -160,6 +180,7 @@ export default function AddModal({ closeModal }) {
             cols="30"
             rows="10"
             placeholder="Description"
+            required
           ></textarea>
           <div className="form__group">
             <input
@@ -167,12 +188,14 @@ export default function AddModal({ closeModal }) {
               className="form__field"
               placeholder="Opens at"
               name="opens_at"
+              required
             />
             <input
               type="time"
               className="form__field"
               placeholder="Closes at"
               name="closes_at"
+              required
             />
           </div>
           <div className="form__group">
@@ -226,6 +249,7 @@ export default function AddModal({ closeModal }) {
             cols="30"
             rows="10"
             placeholder="Address"
+            required
           ></textarea>
           <div className="form__group">
             <input
@@ -233,18 +257,21 @@ export default function AddModal({ closeModal }) {
               className="form__field"
               placeholder="City"
               name="city"
+              required
             />
             <input
               type="text"
               className="form__field"
               placeholder="State"
               name="state"
+              required
             />
             <input
               type="text"
               className="form__field"
               placeholder="Country"
               name="country"
+              required
             />
           </div>
           <div className="form__group">

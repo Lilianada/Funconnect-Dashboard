@@ -24,7 +24,7 @@ export default function EditModal({ closeModal, placeId }) {
     opens_at: "",
     closes_at: "",
     phone_e164: "",
-    cover_photo: '',
+    cover_photo: "",
   });
 
   // Get categories
@@ -81,12 +81,11 @@ export default function EditModal({ closeModal, placeId }) {
       }));
     }
   };
-  
 
   // Get place data
   useEffect(() => {
     let source = axios.CancelToken.source();
-  
+
     const getPlaceData = async () => {
       setLoading(true);
       try {
@@ -123,7 +122,7 @@ export default function EditModal({ closeModal, placeId }) {
           cover_photo: place.cover_image_path,
           categories: place.categories.map((category) => category.id), // Extracting category IDs
         }));
-        setSelectedCategories(place.categories.map((category) => category.id)); 
+        setSelectedCategories(place.categories.map((category) => category.id));
       } catch (error) {
         if (!axios.isCancel(error)) {
           console.error(error);
@@ -136,9 +135,9 @@ export default function EditModal({ closeModal, placeId }) {
         setLoading(false);
       }
     };
-  
+
     getPlaceData();
-  
+
     return () => {
       source.cancel("Request canceled");
     };
@@ -149,14 +148,14 @@ export default function EditModal({ closeModal, placeId }) {
     try {
       const apiToken = localStorage.getItem("apiToken");
       const url = `${process.env.REACT_APP_BASE_URL}/places/${placeId}`;
-  
+
       const formData = new FormData();
       formData.append("name", placeData.name);
       formData.append("address", placeData.address);
       formData.append("headline", placeData.headline);
       formData.append("description", placeData.description);
       formData.append("country", placeData.country);
-  
+
       // Check if cover photo is selected
       if (placeData.cover_photo) {
         // Check if the cover photo is a file or a string (URL)
@@ -166,7 +165,7 @@ export default function EditModal({ closeModal, placeId }) {
           formData.append("cover_photo_url", placeData.cover_photo);
         }
       }
-  
+
       formData.append("state", placeData.state);
       formData.append("city", placeData.city);
       formData.append("email", placeData.email);
@@ -175,12 +174,21 @@ export default function EditModal({ closeModal, placeId }) {
       formData.append("phone_e164", placeData.phone_e164);
       formData.append("longitude", placeData.longitude);
       formData.append("latitude", placeData.latitude);
-  
+
       // Append selected categories to formData
       selectedCategories.forEach((categoryId) => {
         formData.append("categories[]", categoryId);
       });
-  
+
+       // Optional fields
+  const optionalFields = ["latitude", "longitude", "phone_e164", ];
+  optionalFields.forEach((field) => {
+    const value = event.target.elements[field].value.trim();
+    if (value) {
+      formData.append(field, value);
+    }
+  });
+
       const response = await axios.post(url, formData, {
         headers: {
           Accept: "application/json",
@@ -189,7 +197,7 @@ export default function EditModal({ closeModal, placeId }) {
           "x-api-key": process.env.REACT_APP_API_KEY,
         },
       });
-  
+
       const responseBody = response.data;
       if (responseBody.message.toLowerCase() === "updated") {
         setSuccess("Place updated successfully!");
@@ -207,7 +215,7 @@ export default function EditModal({ closeModal, placeId }) {
       setLoading(false);
     }
   };
-  
+
   return (
     <Dialog>
       <div className="wrap__places">
@@ -284,27 +292,28 @@ export default function EditModal({ closeModal, placeId }) {
             />
           </div>
           <Multiselect
-  options={categories.map((category) => ({
-    key: category.id,
-    value: category.name,
-  }))}
-  selectedValues={selectedCategories.map((categoryId) => ({
-    key: categoryId,
-    value: categories.find((category) => category.id === categoryId)?.name,
-  }))}
-  displayValue="value"
-  onSelect={(selectedList) => {
-    const selectedCategories = selectedList.map((item) => item.key);
-    setSelectedCategories(selectedCategories);
-  }}
-  onRemove={(selectedList) => {
-    const selectedCategories = selectedList.map((item) => item.key);
-    setSelectedCategories(selectedCategories);
-  }}
-  placeholder="Select categories"
-  className="select__field"
-  name="categories"
-/>
+            options={categories.map((category) => ({
+              key: category.id,
+              value: category.name,
+            }))}
+            selectedValues={selectedCategories.map((categoryId) => ({
+              key: categoryId,
+              value: categories.find((category) => category.id === categoryId)
+                ?.name,
+            }))}
+            displayValue="value"
+            onSelect={(selectedList) => {
+              const selectedCategories = selectedList.map((item) => item.key);
+              setSelectedCategories(selectedCategories);
+            }}
+            onRemove={(selectedList) => {
+              const selectedCategories = selectedList.map((item) => item.key);
+              setSelectedCategories(selectedCategories);
+            }}
+            placeholder="Select categories"
+            className="select__field"
+            name="categories"
+          />
 
           <div className="form__group">
             <div className="form__field">
@@ -314,11 +323,7 @@ export default function EditModal({ closeModal, placeId }) {
                 placeholder="Cover photo (Choose file)"
                 onChange={handleInputChange}
               />
-              <img
-                src={placeData.cover_photo}
-                alt=""
-                className="form__image"
-              />
+              <img src={placeData.cover_photo} alt="" className="form__image" />
             </div>
           </div>
           <textarea
@@ -329,6 +334,7 @@ export default function EditModal({ closeModal, placeId }) {
             placeholder="Address"
             value={placeData.address}
             onChange={handleInputChange}
+            required
           ></textarea>
           <div className="form__group">
             <input
@@ -338,6 +344,7 @@ export default function EditModal({ closeModal, placeId }) {
               name="city"
               value={placeData.city}
               onChange={handleInputChange}
+              required
             />
             <input
               type="text"
@@ -346,6 +353,7 @@ export default function EditModal({ closeModal, placeId }) {
               name="state"
               value={placeData.state}
               onChange={handleInputChange}
+              required
             />
             <input
               type="text"
@@ -354,6 +362,7 @@ export default function EditModal({ closeModal, placeId }) {
               name="country"
               value={placeData.country}
               onChange={handleInputChange}
+              required
             />
           </div>
           <div className="form__group">
