@@ -16,8 +16,7 @@ export default function Places() {
 
   useEffect(() => {
     getPlaces(); 
-    console.log("Unmounted");
-  }, []); // Empty dependency array to run effect only once
+  }, []); 
 
   const getPlaces = async (page) => {
     const apiToken = localStorage.getItem("apiToken");
@@ -27,7 +26,6 @@ export default function Places() {
       if (page) {
         url = page;
       }
-      console.log(url);
       const response = await axios.get(url, {
         headers: {
           Accept: "application/json",
@@ -42,7 +40,6 @@ export default function Places() {
         setCurrentPage(responseBody.data.current_page);
         setNextPage(responseBody.data.next_page_url);
         setPrevPage(responseBody.data.prev_page_url);
-        console.log(responseBody.data);
       } else {
         setError("Unable to fetch data.");
       }
@@ -51,7 +48,6 @@ export default function Places() {
     } finally {
       setLoading(false);
     }
-    console.log("1Unmounted");
   };
 
   const handleNextPage = () => {

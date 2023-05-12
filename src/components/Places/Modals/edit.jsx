@@ -24,7 +24,7 @@ export default function EditModal({ closeModal, placeId }) {
     opens_at: "",
     closes_at: "",
     phone_e164: "",
-    cover_photo: null,
+    cover_photo: '',
   });
 
   // Get categories
@@ -86,7 +86,7 @@ export default function EditModal({ closeModal, placeId }) {
   // Get place data
   useEffect(() => {
     let source = axios.CancelToken.source();
-
+  
     const getPlaceData = async () => {
       setLoading(true);
       try {
@@ -121,26 +121,28 @@ export default function EditModal({ closeModal, placeId }) {
           longitude: place.location.long,
           latitude: place.location.lat,
           cover_photo: place.cover_image_path,
-          categories: place.categories,
+          categories: place.categories.map((category) => category.id), // Extracting category IDs
         }));
+        setSelectedCategories(place.categories.map((category) => category.id)); 
       } catch (error) {
         if (!axios.isCancel(error)) {
           console.error(error);
           setError("Unable to fetch place data.");
+          setTimeout(() => {
+            setError("");
+          }, 4000);
         }
       } finally {
         setLoading(false);
       }
     };
-
+  
     getPlaceData();
-
+  
     return () => {
       source.cancel("Request canceled");
     };
   }, []);
-
-  //handle submit
   const handleSubmit = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -154,16 +156,17 @@ export default function EditModal({ closeModal, placeId }) {
       formData.append("headline", placeData.headline);
       formData.append("description", placeData.description);
       formData.append("country", placeData.country);
+  
       // Check if cover photo is selected
-    if (placeData.cover_photo) {
-      formData.append("cover_photo", placeData.cover_photo);
-    }else {
-      // Handle the case when the cover photo is not provided
-      setError("The cover photo field is required.");
-      setLoading(false);
-      return;
-    }
-
+      if (placeData.cover_photo) {
+        // Check if the cover photo is a file or a string (URL)
+        if (placeData.cover_photo instanceof File) {
+          formData.append("cover_photo", placeData.cover_photo);
+        } else {
+          formData.append("cover_photo_url", placeData.cover_photo);
+        }
+      }
+  
       formData.append("state", placeData.state);
       formData.append("city", placeData.city);
       formData.append("email", placeData.email);
@@ -172,9 +175,10 @@ export default function EditModal({ closeModal, placeId }) {
       formData.append("phone_e164", placeData.phone_e164);
       formData.append("longitude", placeData.longitude);
       formData.append("latitude", placeData.latitude);
-      placeData.categories.forEach((category) => {
-        formData.append("categories[]", category);
-        console.log(category);
+  
+      // Append selected categories to formData
+      selectedCategories.forEach((categoryId) => {
+        formData.append("categories[]", categoryId);
       });
   
       const response = await axios.post(url, formData, {
@@ -190,7 +194,6 @@ export default function EditModal({ closeModal, placeId }) {
       if (responseBody.message.toLowerCase() === "updated") {
         setSuccess("Place updated successfully!");
         setTimeout(() => setSuccess(""), 4000);
-        console.log(responseBody);
       } else {
         const error = response.data.message;
         setError(error);
@@ -205,7 +208,6 @@ export default function EditModal({ closeModal, placeId }) {
     }
   };
   
-
   return (
     <Dialog>
       <div className="wrap__places">
@@ -282,28 +284,27 @@ export default function EditModal({ closeModal, placeId }) {
             />
           </div>
           <Multiselect
-            options={categories.map((category) => ({
-              key: category.id,
-              value: category.name,
-            }))}
-            selectedValues={selectedCategories.map((categoryId) => ({
-              key: categoryId,
-              value: categories.find((category) => category.id === categoryId)
-                ?.name,
-            }))}
-            displayValue="value"
-            onSelect={(selectedList) => {
-              const selectedCategories = selectedList.map((item) => item.key);
-              setSelectedCategories(selectedCategories);
-            }}
-            onRemove={(selectedList) => {
-              const selectedCategories = selectedList.map((item) => item.key);
-              setSelectedCategories(selectedCategories);
-            }}
-            placeholder="Select categories"
-            className="select__field"
-            name="categories"
-          />
+  options={categories.map((category) => ({
+    key: category.id,
+    value: category.name,
+  }))}
+  selectedValues={selectedCategories.map((categoryId) => ({
+    key: categoryId,
+    value: categories.find((category) => category.id === categoryId)?.name,
+  }))}
+  displayValue="value"
+  onSelect={(selectedList) => {
+    const selectedCategories = selectedList.map((item) => item.key);
+    setSelectedCategories(selectedCategories);
+  }}
+  onRemove={(selectedList) => {
+    const selectedCategories = selectedList.map((item) => item.key);
+    setSelectedCategories(selectedCategories);
+  }}
+  placeholder="Select categories"
+  className="select__field"
+  name="categories"
+/>
 
           <div className="form__group">
             <div className="form__field">
